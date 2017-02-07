@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="/static/css/metro.css" rel="stylesheet">
+    <link href="/static/css/metro-icons.css" rel="stylesheet">
+    <script src="/static/js/jquery-2.1.3.min.js"></script>
+    <script src="/static/js/metro.js"></script>
+</head>
+<body>
+    <div id='preloader' style='display:none' data-role="preloader" data-type="metro" data-style="dark"></div>
+    <div class="wrapper margin80">
+      {% if user.is_authenticated %}
+      <div style="float:right;width:auto;display: inline-block;" class="app-bar" >
+        <ul class="app-bar-menu place-right" data-flexdirection="reverse">
+          <li data-flexorderorigin="1" data-flexorder="2"><a href=""><span class="mif-user icon"></span>{{user.get_full_name}}</a></li>
+          <div class="app-bar-divider"></div>
+          <li data-flexorderorigin="2" data-flexorder="3"><a href="/logout"><span class="mif-logout icon"></span>Выход</a></li>
+        </ul>
+      </div>
+      {% endif %}
+
+      <div class="tile-container" style="float:left;width:160px">
+
+        <div class="tile bg-blue fg-white" data-role="tile" onclick="ShowHide('install')">
+          <div class="tile-content iconic">
+            <span class="icon mif-cogs"></span>
+            <span class="tile-label">Установка SSL</span>
+          </div>
+        </div>
+        <div class="tile bg-green fg-white" data-role="tile" onclick="ShowHide('generate')">
+          <div class="tile-content iconic">
+            <span class="icon mif-file-binary"></span>
+            <span class="tile-label">Создание CSR</span>
+          </div>
+        </div>
+        <div class="tile bg-orange fg-white" data-role="tile" onclick="ShowHide('show')">
+          <div class="tile-content iconic">
+            <span class="icon mif-library"></span>
+            <span class="tile-label">Показать SSL</span>
+          </div>
+        </div>
+        <div class="tile bg-yellow fg-white" data-role="tile" onclick="ShowHide('roots')">
+          <div class="tile-content iconic">
+            <span class="icon mif-security"></span>
+            <span class="tile-label">Корневые сертификаты</span>
+          </div>
+        </div>
+        <div class="tile bg-red fg-white" data-role="tile" onclick="ShowHide('delete')">
+          <div class="tile-content iconic">
+            <span class="icon mif-ambulance"></span>
+            <span class="tile-label">Удалить SSL</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="content" style="margin-left:230px">
+        <form id="install" style="display:none" onsubmit="return postData('install');">
+          {% csrf_token %}
+          <h4>Введите домен</h4>
+          <div style="width:300px" class="input-control text">
+            <input name="zone" type="text">
+          </div>
+          <button type="submit" class="button  bg-darkCobalt bg-active-darkPink fg-white">Установить</button>
+        <h4>Дополнительная услуга:</h4>
+        <label class="input-control radio">
+            <input type="radio" name="service_type" value="11">
+            <span class="check"></span>
+            <span class="caption">Плтаный SSL cертификат(11)</span>
+        </label>
+          <label class="input-control radio">
+              <input type="radio" name="service_type" value="3">
+              <span class="check"></span>
+              <span class="caption">Собственный сертификат, платный ip(3)</span>
+          </label>
+        </br>
+        <label class="input-control radio">
+          <input type="radio" name="service_type" value="85">
+          <span class="check"></span>
+          <span class="caption">Let's Encrypt(85)</span>
+        </label>
+          <label class="input-control radio">
+              <input type="radio" name="service_type" value="59">
+              <span class="check"></span>
+              <span class="caption">Платный Wildcard(59)</span>
+          </label>
+          </br>
+          <label class="input-control checkbox">
+              <input type="checkbox" name="newip">
+              <span class="check"></span>
+              <span class="caption">Выделить новый Ip адрес</span>
+          </label>
+        </br>
+          <h4>Добавить корневые сертификаты:</h4>
+          <label class="input-control radio">
+              <input type="radio" name="root_certs" value="" checked>
+              <span class="check"></span>
+              <span class="caption">Не добавлять</span>
+          </label>
+          <label class="input-control radio">
+              <input type="radio" name="root_certs" value="comodo.crt">
+              <span class="check"></span>
+              <span class="caption">Comodo</span>
+          </label>
+          <label class="input-control radio">
+              <input type="radio" name="root_certs" value="letsencrypt.crt">
+              <span class="check"></span>
+              <span class="caption">Let's Encrypt</span>
+          </label>
+          <h4>Укажите сертификат и ключ к нему(если есть):</h4>
+          <div style="width:600px"  class="input-control textarea" data-role="input" data-text-auto-resize="true">
+              <textarea name='crt' placeholder="Введите сертификат CRT"></textarea>
+          </div>
+            <div style="width:600px" class="input-control textarea" data-role="input" data-text-auto-resize="true">
+                <textarea name='key' placeholder="Введите ключ PRIVATE KEY"></textarea>
+            </div>
+        </form>
+        <form id="generate" style="display:none" onsubmit="return postData('generate');">
+          {% csrf_token %}
+          <h4>Укажите данные для CSR</h4>
+          <button type="submit" class="button bg-darkCobalt bg-active-darkPink fg-white">Создать</button>
+          </br>
+          <a target="_blank" href="https://confluence.timeweb.net/pages/viewpage.action?pageId=6619836#id-РегламентпоустановкеSSL-сертификатов-ПрисозданииCSRнеобходимыследующиеданныеввиде">формат данных</a>
+          </br>
+          <div style="width:600px"  class="input-control textarea" data-role="input" data-text-auto-resize="true">
+              <textarea name="csrtext" placeholder="Данные для CSR"></textarea>
+          </div>
+        </form>
+        <form id="show" style="display:none" onsubmit="return postData('show');">
+          {% csrf_token %}
+          <h4>Укажите домен</h4>
+          <div style="width:300px" class="input-control text">
+            <input name="zone" type="text">
+          </div>
+          <button type="submit" class="button bg-darkCobalt bg-active-darkPink fg-white">Показать</button>
+          <h4>Данные SSL из бд:</h4>
+
+          <div style="width:600px;height:600px"  class="input-control textarea" data-role="input" data-text-auto-resize="true">
+            <p onclick='download("cert.txt", $("textarea['showcrt']").value);'>Скачать</p>
+              <textarea name="showcrt" disabled placeholder="Сертификат"></textarea>
+          </div>
+
+            <div style="width:600px;height:600px" class="input-control textarea" data-role="input" data-text-auto-resize="true">
+              <p onclick="download('key.txt', $(\"textarea['showkey']\").value);">Скачать</p>
+                <textarea name="showkey" disabled placeholder="Ключ"></textarea>
+            </div>
+        </form>
+        <form id="roots" style="display:none" onsubmit="return postData('roots');">
+          {% csrf_token %}
+          <h4>Выберите поставщика</h4>
+          <label class="input-control radio">
+              <input type="radio" name="roots" value="comodo.crt">
+              <span class="check"></span>
+              <span class="caption">Comodo</span>
+          </label>
+            <label class="input-control radio">
+                <input type="radio" name="roots" value="thawte.crt">
+                <span class="check"></span>
+                <span class="caption">Thawte</span>
+            </label>
+          <label class="input-control radio">
+            <input type="radio" name="roots" value="letsencrypt.crt">
+            <span class="check"></span>
+            <span class="caption">Let's Encrypt</span>
+          </label>
+          <button type="submit" class="button bg-darkCobalt bg-active-darkPink fg-white">Показать</button>
+        </br>
+          <div style="width:600px;height:600px" class="input-control textarea" data-role="input" data-text-auto-resize="true">
+              <textarea name="roots" disabled placeholder="Сертификаты отобразятся здесь"></textarea>
+          </div>
+        </form>
+        <form id="delete" style="display:none" onsubmit="return postData('delete');">
+          {% csrf_token %}
+          <h4>Укажите домен</h4>
+          <div style="width:300px" class="input-control text">
+            <input type="text" name="zone">
+          </div>
+          <button type="submit" class="button bg-darkCobalt bg-active-darkPink fg-white">Удалить</button>
+        <h5>Дополнително:</h5>
+        <label class="input-control checkbox">
+            <input type="checkbox" name="delencrypt">
+            <span class="check"></span>
+            <span class="caption">Удалить услугу Let's Encrypt для домена</span>
+        </label>
+        </form>
+      </div>
+
+    </div>
+    <script>
+      var ids = ['install', 'show', 'generate', 'delete', 'roots'];
+      function ShowHide(show){
+        for (var i=0; i < ids.length; i++){
+          if (ids[i] != show){
+            $("#"+ids[i]).hide();
+          }
+        }
+        $("#" + show + " ").show();
+      }
+      function genssl(){
+        $('textarea[name="csr"]').text(result.csr);
+      }
+      function notify(caption, content, type){
+        $.Notify({
+          caption: caption,
+          content: content,
+          type: type
+      });
+    }
+      function download(filename, text) {
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+      }
+      function postData(formid){
+        var formdata = $('#'+formid).serialize();
+        var zone = $('#'+formid+" div > input").val();
+        var buttonclass = 'bg-lightGray';
+        var ntype;
+        var message;
+        $('#'+formid+" button").addClass(buttonclass).attr('disabled', 'disabled');
+        $('#preloader').show();
+        console.log(formdata);
+        request = $.ajax({
+          type: 'POST',
+          url: '/'+formid,
+          dataType: 'json',
+          data: formdata,
+        })
+        .done(function(result){
+            document.getElementById(formid).reset();
+            console.log(result);
+            if(formid == 'generate'){
+              $('textarea[name="csrtext"]').val(result.csr);
+            }
+            if(formid == 'show'){
+              $('textarea[name="showcrt"]').val(result.crt);
+              $('textarea[name="showkey"]').val(result.key);
+              download(zone+'.ssl', result.crt+result.key);
+            }
+            if(formid == 'roots'){
+              $('textarea[name="roots"]').val(result.crt);
+            }
+          })
+        .fail(function(result) {
+            console.log('FAIL');
+            console.log(result);
+          })
+        .always(function(result){
+          $('#'+formid+" button").removeClass(buttonclass).attr('disabled', false);
+          $('#preloader').hide();
+          if ('errors' in result){
+            ntype = 'alert'
+            message = result.errors;
+          }
+          else {
+            ntype = 'success'
+            message = result.responseText;
+          }
+          notify(formid, message, ntype);
+        });
+        return false;
+      }
+
+    </script>
+</body>
+</html>

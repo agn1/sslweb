@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="/static/css/metro.css" rel="stylesheet">
+    <link href="/static/css/metro-icons.css" rel="stylesheet">
+    <script src="/static/js/jquery-2.1.3.min.js"></script>
+    <script src="/static/js/metro.js"></script>
+</head>
+<body>
+
+<div class="content" style="display: block;position: fixed;left: 40%;top: 30%;">
+  <form action="/login" method="post">
+    {% csrf_token %}
+    <h4>Авторизация</h4>
+    <div style="width:300px" class="input-control text">
+      <input name="username" type="text" placeholder="Введите логин">
+    </div>
+  </br>
+    <div style="width:300px" class="input-control password">
+      <input name="password" type="password" placeholder="Введите пароль">
+    </div>
+    </br>
+    <button type="submit" class="button bg-darkCobalt bg-active-darkPink fg-white">Войти</button>
+  </form>
+</body>
+</html>
