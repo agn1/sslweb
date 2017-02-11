@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import re
 import OpenSSL
 from cryptography.fernet import Fernet
@@ -42,60 +43,34 @@ class SslManager():
             return False
 
     def get_free_ip(self, target):
-        req = requests.Session()
+        result = None
         data = {"target": target, "location":"4", "ipv4":"true"}
         kwargs = {'data': json.dumps(data),
                   'headers': {'content-type': 'application/json'},
                   'auth': ('vapi', 'SE2a9e3eHuWen0pO')}
         url = 'http://noc:7508/api/v1.0/NOC/GetFreeIp'
-        try:
-            _response = req.request("GET", url, **kwargs)
-            try:
-                result = _response.json()
-            except Exception as e:
-                raise Exception("%s: %s" % (str(e), _response.text.replace('\n', '')))
-            if _response.status_code == 200:
-                if 'data' not in result:
-                    print "Empty data"
-                    sys.exit(1)
-                for ip in result['data']['ipv4']:
-                    return ip['ip']
-            else:
-                if result['msg'] == "Empty list of subnets":
-                    print("No found ip for this target and datacenter")
-                else:
-                    print("Error: %s" % result['msg'])
-        except Exception, e:
-            print(str(e))
+        _response = requests.get(url, **kwargs)
+        if _response.status_code == 200:
+            jr = _response.json()
+            if 'data' in jr:
+                result = jr['data']['ipv4'][0]['ip']
+        return result
 
-
-    def get_new_ip(self, server):
-        process = Popen(
-            ['/usr/local/sbin/get_free_ip.py', '-s{0}'.format(server), '-p'],
-            stdout=PIPE, stderr=PIPE
-            )
-        stdout, stderr = process.communicate()
-        nginx_ip = stdout.strip('\n').strip()
-        print(nginx_ip)
-        try:
-            inet_aton(nginx_ip)
-            return nginx_ip
-        except:
-            return False
+    def check_ssl_install(self, zone, ip):
+        headers = {'Host': zone}
+        r = requests.get('https://' + str(ip), verify=False, headers=headers)
+        return True if r.status_code == 200 else False
 
     def check_idn_name(self, zone):
         idn = self.db.load_object('SELECT idn_name FROM billing.vhosts WHERE idn_name="{0}"'.format(zone))
-        if idn:
-            return self.is_ascii(idn['idn_name'])
-        else:
-            return False
+        return self.is_ascii(idn['idn_name']) if idn else False
 
-    def update_a_dns(self, ip, zone):
+    def update_a_dns(self, zone, ip):
         self.db.set_query('DELETE FROM billing.dns_records where fqdn="{0}" and type="a";'.format(zone))
         self.db.set_query('INSERT INTO billing.dns_records (fqdn, type, value) VALUES ("{0}", "a", "{1}")'.format(zone, ip))
         self.db.set_query('UPDATE billing.vhosts SET serial=serial+1 WHERE fqdn=idn_name AND fqdn="{0}";'.format(zone))
 
-    def update_ip_id(self, ip, zone):
+    def update_ip_id(self, zone, ip):
         self.db.set_query('UPDATE billing.vhosts SET ip_id=(SELECT id FROM billing.ip_addr WHERE ip="{0}") WHERE idn_name="{1}";'.format(ip, zone))
         if zone[0:1] == '*':
             self.db.set_query('UPDATE billing.vhosts SET ip_id=(SELECT id FROM billing.ip_addr WHERE ip="{0}") WHERE idn_name="{1}";'.format(ip, zone[1:]))
@@ -104,17 +79,23 @@ class SslManager():
         adv = self.db.load_object_list('''SELECT id, info, requested_data FROM billing.adv_services WHERE customer_id="{user}"
             AND service_type="{service_type}";'''.format(user=user, service_type=service_type))
         if adv:
-            print(adv)
             for i in adv:
                 if i['info'] == ip:
-                    if not '{"fqdn": "%s"}' % zone in i['requested_data'] or i['requested_data'] != zone:
-                        self.db.set_query('''UPDATE billing.adv_services
-                            SET requested_data='{0}' WHERE id='{1}';'''.format('{"fqdn": "%s"}' % zone, i['id'])
-                        )
-                        break
-                if i['info'] != ip and '{"fqdn": "%s"}' % zone in i['requested_data'] or i['requested_data'] == zone:
+                    self.db.set_query('''UPDATE billing.adv_services
+                        SET requested_data='{0}' WHERE id='{1}';'''.format('{"fqdn": "%s"}' % zone, i['id'])
+                    )
+                    break
+                elif zone in i['requested_data']:# or i['requested_data'] == zone:
                     self.db.set_query('''UPDATE billing.adv_services
                         SET info='{0}' WHERE id='{1}';'''.format(ip, i['id'])
+                    )
+                    break
+                else:
+                    self.db.set_query('''INSERT INTO billing.adv_services
+                        (service_type, customer_id, add_date, end_date, info, service_comment, service_status, requested_data, vds_id, pay_for)
+                        VALUES ('{0}', '{1}', CURRENT_TIMESTAMP, NOW() + INTERVAL 1 YEAR, '{2}', '','new', '{3}','0','y');'''.format(
+                            service_type, user, ip, '{"fqdn": "%s"}' % zone
+                        )
                     )
                     break
         else:
@@ -130,15 +111,12 @@ class SslManager():
         isql = '''INSERT INTO system.ssl_storage (dt, full_fqdn, `key`, csr, crt, provider, source)
              VALUES (CURRENT_TIMESTAMP, '{0}', '{1}', '', '{2}', 'self', 'manual');'''
         ssldata = self.db.load_object(ssql.format(zone))
-        print(ssldata)
         if ssldata:
             if len(ssldata['crt']) == 0:
-                print('insert cert')
                 usql = 'UPDATE system.ssl_storage SET crt="{0}" WHERE id={1}'
                 self.db.set_query(usql.format(crt, ssldata['id']))
             else:
                 if not self.check_associate_cert_with_private_key(self.crypter.decrypt(bytes(crt)), self.crypter.decrypt(bytes(ssldata['key']))):
-                    print('check true')
                     self.db.set_query(isql.format(zone, key, crt))
         else:
             self.db.set_query(isql.format(zone, key, crt))
@@ -165,26 +143,24 @@ class SslManager():
     def parsecsr(self, csrtext):
         csr = {}
         csrtext = csrtext.split('\n')
-        for i in csrtext:
-            if i == '':
-                csrtext.remove(i)
+        #d.delousov legacy
         for word in csrtext:
             if word.startswith("domains"):
                 csr['commonname'] = re.sub('^domains','', word).strip().lower()
-            if word.startswith("Domains"):
+            elif word.startswith("Domains"):
                 csr['commonname'] = re.sub('^Domains','', word).strip().lower()
-            if word.startswith("Domain"):
+            elif word.startswith("Domain"):
                 csr['commonname'] = re.sub('^Domain','', word).strip().lower()
-            if word.startswith("domain"):
+            elif word.startswith("domain"):
                 csr['commonname'] = re.sub('^domain','', word).strip().lower()
 
             if word.startswith("Name"):
                 csr['organizationalunit'] = re.sub('^Name','', word).lstrip()
                 if csr['organizationalunit']=="n\\a":
                     csr['organizationalunit']="n\\\\a"
-                if csr['organizationalunit']=="n/a":
+                elif csr['organizationalunit']=="n/a":
                     csr['organizationalunit']="n\/a"
-                if csr['organizationalunit']=="N/A":
+                elif csr['organizationalunit']=="N/A":
                     csr['organizationalunit']="N\/A"
 
             if word.startswith("Username"):
@@ -194,33 +170,33 @@ class SslManager():
                 csr['organization'] = re.sub('^Company','', word).strip()
                 if csr['organization']=="n\\a":
                     csr['organization']="n\\\\a"
-                if csr['organization']=="n/a":
+                elif csr['organization']=="n/a":
                     csr['organization']="n\/a"
-                if csr['organization']=="N/A":
+                elif csr['organization']=="N/A":
                     csr['organization']="N\/A"
-                if csr['organization']=="N\\A":
+                elif csr['organization']=="N\\A":
                     csr['organization']="N\\\\A"
 
             if word.startswith("State"):
                 csr['state'] = word.replace("State/Region/Province", "").lstrip()
                 if csr['state']=="n\\a":
                     csr['state']="n\\\\a"
-                if csr['state']=="n/a":
+                elif csr['state']=="n/a":
                     csr['state']="n\/a"
-                if csr['state']=="N/A":
+                elif csr['state']=="N/A":
                     csr['state']="N\/A"
-                if csr['state']=="N\\A":
+                elif csr['state']=="N\\A":
                     csr['state']="N\\\\A"
 
             if word.startswith("City"):
                 csr['locality'] = re.sub('^City','', word).lstrip()
                 if csr['locality']=="n\\a":
                     csr['locality']="n\\\\a"
-                if csr['locality']=="n/a":
+                elif csr['locality']=="n/a":
                     csr['locality']="n\/a"
-                if csr['locality']=="N/A":
+                elif csr['locality']=="N/A":
                     csr['locality']="N\/A"
-                if csr['locality']=="N\\A":
+                elif csr['locality']=="N\\A":
                     csr['locality']="N\\\\A"
 
             if word.startswith("Country"):
@@ -231,7 +207,7 @@ class SslManager():
             "GB":"United Kingdom",
             "US":"United States",
             "AR":"Argentina",
-            "AZ": "Azerbaijan",
+            "AZ":"Azerbaijan",
             "AM":"Armenia",
             "BY":"Belarus",
             "BR":"Brazil",

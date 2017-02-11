@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.http import JsonResponse
 from django.views.generic import RedirectView
 from django.views.generic.edit import FormView
@@ -32,6 +33,11 @@ class LoginView(FormView):
     template_name = 'login.html'
     success_url = '/'
 
+    def get_form(self, *args, **kwargs):
+     form = super(LoginView, self).get_form(*args, **kwargs)
+     form.user = self.request.user
+     return form
+
     def form_valid(self, form):
         user = form.authenticate(self.request)
         return super(LoginView, self).form_valid(form)
@@ -50,9 +56,6 @@ class AjaxableResponseMixin(object):
             return response
 
     def form_valid(self, form):
-        # We make sure to call the parent's form_valid() method because
-        # it might do some processing (in the case of CreateView, it will
-        # call form.save() for example).
         response = super(AjaxableResponseMixin, self).form_valid(form)
         if self.request.is_ajax():
             return JsonResponse(self.jsondata)
@@ -65,6 +68,11 @@ class GenerateCsrView(AjaxableResponseMixin, FormView):
     form_class = GenerateForm
     template_name = 'index.html'
     success_url = '/'
+
+    def get_form(self, *args, **kwargs):
+     form = super(GenerateCsrView, self).get_form(*args, **kwargs)
+     form.user = self.request.user
+     return form
 
     def form_valid(self, form):
         # This method is called when valid form data has been POSTed.
@@ -80,6 +88,11 @@ class ShowView(AjaxableResponseMixin, FormView):
     template_name = 'index.html'
     success_url = '/'
 
+    def get_form(self, *args, **kwargs):
+     form = super(ShowView, self).get_form(*args, **kwargs)
+     form.user = self.request.user
+     return form
+
     def form_valid(self, form):
         self.jsondata = form.showssl()
         self.jsondata['crt'] =  str(self.jsondata['crt'])
@@ -93,6 +106,11 @@ class DeleteView(AjaxableResponseMixin, FormView):
         template_name = 'index.html'
         success_url = '/'
 
+        def get_form(self, *args, **kwargs):
+         form = super(DeleteView, self).get_form(*args, **kwargs)
+         form.user = self.request.user
+         return form
+
         def form_valid(self, form):
             self.jsondata = form.deletessl()
             return super(DeleteView, self).form_valid(form)
@@ -104,6 +122,11 @@ class InstallView(AjaxableResponseMixin, FormView):
         template_name = 'index.html'
         success_url = '/'
 
+        def get_form(self, *args, **kwargs):
+         form = super(InstallView, self).get_form(*args, **kwargs)
+         form.user = self.request.user
+         return form
+
         def form_valid(self, form):
             self.jsondata = form.installssl()
             return super(InstallView, self).form_valid(form)
@@ -114,6 +137,11 @@ class RootsView(AjaxableResponseMixin, FormView):
         form_class = RootsForm
         template_name = 'index.html'
         success_url = '/'
+
+        def get_form(self, *args, **kwargs):
+         form = super(RootsView, self).get_form(*args, **kwargs)
+         form.user = self.request.user
+         return form
 
         def form_valid(self, form):
             self.jsondata = form.showroots()
