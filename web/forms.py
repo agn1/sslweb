@@ -192,7 +192,7 @@ class InstallForm(SslManager, forms.Form, Logger):
             result['errors'] = 'Отсутствуют данные для установки'
         if not data['ip'] and not newip:
             result['errors'] = 'Адрес не привязан к домену'
-        if not result['errors']
+        if not result['errors']:
             if self.check_idn_name(zone):
                 if self.check_associate_cert_with_private_key(data['crt'], data['key']):
                     self.logger(self.user.username, 'domain: %s, newip: %s, service_type: %s' % (zone, newip, service_type))
