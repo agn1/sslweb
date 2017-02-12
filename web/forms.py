@@ -206,7 +206,7 @@ class InstallForm(SslManager, forms.Form, Logger):
                             self.update_ip_id(fqdn, data['ip'])
                         else:
                             result['errors'] = 'no new ip'
-                    if not result['errors']
+                    if not result['errors']:
                         self.update_adv_services(fqdn, data['ip'], data['customer_id'], service_type)
                         self.update_ssl_storage(zone, self.crypter.encrypt(bytes(data['key'])), self.crypter.encrypt(bytes(data['crt'])))
                         if root_certs:
