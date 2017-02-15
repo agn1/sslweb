@@ -109,6 +109,8 @@ class ShowForm(forms.Form, SslManager, Logger):
                 except:
                     self.logger(self.user.username, 'error: decrypt %s of %s failed' % (key, zone)
                     data[key] = 'Broken'
+            else:
+                data[key] = 'Empty'
         return data
 
 
