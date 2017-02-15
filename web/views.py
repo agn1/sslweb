@@ -95,8 +95,8 @@ class ShowView(AjaxableResponseMixin, FormView):
 
     def form_valid(self, form):
         self.jsondata = form.showssl()
-        self.jsondata['crt'] =  str(self.jsondata['crt'])
-        self.jsondata['key'] =str(self.jsondata['key'])
+        for key in self.jsondata:
+            self.jsondata[key] =  str(self.jsondata[key])
         return super(ShowView, self).form_valid(form)
 
 
