@@ -175,8 +175,6 @@ class InstallForm(SslManager, forms.Form, Logger):
         if 'timeweb' in zone:
             result['errors'] =  'Атата по рукам'
             self.logger(self.user.username, 'Need to break arms, input domain %s' % self.cleaned_data['zone'])
-        crt = self.cleaned_data['crt'] if len(self.cleaned_data['crt'])>0 else False
-        key = self.cleaned_data['key'] if len(self.cleaned_data['key'])>0 else False
         newip = self.cleaned_data['newip']
         service_type = self.cleaned_data['service_type']
         root_certs = self.cleaned_data['root_certs'] if self.cleaned_data['root_certs'] != 'None' else None
@@ -189,26 +187,20 @@ class InstallForm(SslManager, forms.Form, Logger):
                             LEFT JOIN system.ssl_storage ss ON ss.full_fqdn=v.idn_name
                             WHERE s.id=v.site_id AND v.idn_name="{0}" ORDER BY ss.id DESC LIMIT 1;'''
         data = self.db.load_object(ssql.format(zone))
-
         if data:
             for k in 'crt', 'key':
                 try:
-                    data[k] = key if key else self.crypter.decrypt(bytes(data[k]))
+                    data[k] = self.cleaned_data[k] if len(self.cleaned_data[k])>0 else self.crypter.decrypt(bytes(data[k]))
                 except:
                     result['errors'] = 'Отсутствует %s для установки' % k
-                    self.logger(self.user.username, 'Thereis no %s for %s' % (k, self.cleaned_data['zone']))
-            try:
-                data['crt'] = crt if crt else self.crypter.decrypt(bytes(data['crt']))
-            except:
-                result['errors'] = 'Отсутствует сертификат для установки'
-                self.logger(self.user.username, 'Thereis no crt for %s' % self.cleaned_data['zone'])
+                    self.logger(self.user.username, 'Thereis no %s for %s' % (k, zone))
             if 'ip' in data and not newip:
                 if not data['ip'] :
                     result['errors'] = 'Домен не привязан к выделенному адресу'
-                    self.logger(self.user.username, 'No additional ip %s' % self.cleaned_data['zone'])
+                    self.logger(self.user.username, 'No additional ip %s' % zone)
         else:
             result['errors'] = 'Отсутствуют данные для установки'
-            self.logger(self.user.username, 'Thereis no data for %s' % self.cleaned_data['zone'])
+            self.logger(self.user.username, 'Thereis no data for %s' % zone)
         if not result['errors']:
             if self.check_idn_name(zone):
                 if self.check_associate_cert_with_private_key(data['crt'], data['key']):
