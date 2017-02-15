@@ -12982,7 +12982,6 @@ input[type="submit"].link:active {
   padding: .625rem;
   min-width: 200px;
   cursor: default;
-  max-width: 300px;
   position: relative;
 }
 .notify .notify-icon {
@@ -13007,10 +13006,10 @@ input[type="submit"].link:active {
 }
 .notify .notify-title {
   font-weight: 500;
-  font-size: 1rem;
+  font-size: 2rem;
 }
 .notify .notify-text {
-  font-size: .875rem;
+  font-size: 1.3rem;
 }
 .notify .notify-closer {
   position: absolute;
