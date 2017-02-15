@@ -112,8 +112,8 @@ class ShowForm(forms.Form, SslManager, Logger):
                         data[key] = 'Broken'
                 else:
                     data[key] = 'Empty'
-            else:
-                data['errors'] = 'Domain not exist'
+        else:
+            data['errors'] = 'Domain not exist'
         return data
 
 
