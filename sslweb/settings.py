@@ -64,7 +64,7 @@ AUTH_LDAP_CACHE_GROUPS = True
 AUTH_LDAP_GROUP_CACHE_TIMEOUT = 3600
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 # 
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 #
 
 
 # Keep ModelBackend around for per-user permissions and maybe a local
@@ -112,7 +112,8 @@ WSGI_APPLICATION = 'sslweb.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': os.path.join('/home', 'db.sqlite3'),
+        #'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     },
 }
 
