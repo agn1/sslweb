@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django import forms
 from django.db import connections
-from ssllib.sslmanager import SslManager
+from sslmanager import SslManager
 from django.contrib.auth import authenticate, login
 import time
 
@@ -130,27 +130,25 @@ class DeleteForm(SslManager, forms.Form, Logger):
     delencrypt = forms.CharField(error_messages=my_default_errors, required=False)
 
     def deletessl(self):
-        self.logger(self.user.username, 'Delete SSL %s' % self.cleaned_data['zone'])
+        zone = self.cleaned_data['zone'].encode('idna')
+        self.logger(self.user.username, 'Delete SSL %s' % zone)
         result = {'responseText': 'Ok'}
         sql_data = self.db.load_object('''SELECT customer_id, server
             FROM billing.vhosts WHERE fqdn="{0}" LIMIT 1;'''.format(self.cleaned_data['zone']))
-
         if self.cleaned_data['delencrypt']:
-            print(self.cleaned_data['delencrypt'])
             if sql_data:
-                print(type(sql_data))
                 sql = '''DELETE FROM billing.adv_services  WHERE service_type="85"
                     AND customer_id="{0}" AND (requested_data="{1}" OR requested_data="");'''.format(
-                    sql_data['customer_id'], self.cleaned_data['zone'])
+                    sql_data['customer_id'], zone)
                 self.db.set_query(sql)
             else:
-                self.logger(self.user.username, 'thereis no adv service LEt\'s Encrypt for %s' % self.cleaned_data['zone'])
+                self.logger(self.user.username, 'thereis no adv service LEt\'s Encrypt for %s' % zone)
                 result['errors'] = 'Доп услуги Let\'s Encrypt нет'
         try:
-            self.soap_delete_zone(sql_data['server'], self.cleaned_data['zone'])
+            self.soap_delete_zone(sql_data['server'], zone)
         except Exception as e:
-            result['errors'] = 'SOAP запрос отвалился'
-            self.logger(self.user.username, 'Delete soap failed for %s' % self.cleaned_data['zone'])
+            result['errors'] = 'Ошибка SOAP запроса'
+            self.logger(self.user.username, 'Delete soap failed for %s' % zone)
         return result
 
 
@@ -174,7 +172,6 @@ class InstallForm(SslManager, forms.Form, Logger):
         result = {'responseText': 'Ok', 'errors': False}
         zone  = self.cleaned_data['zone'].encode('idna')
         zone = zone if zone[:4] != 'www.' else zone[4:]
-        fqdn = zone[2:] if zone[:1] == '*' else zone
         if 'timeweb' in zone:
             result['errors'] =  'Атата по рукам'
             self.logger(self.user.username, 'Need to break arms, input domain %s' % self.cleaned_data['zone'])
@@ -192,12 +189,14 @@ class InstallForm(SslManager, forms.Form, Logger):
                             LEFT JOIN system.ssl_storage ss ON ss.full_fqdn=v.idn_name
                             WHERE s.id=v.site_id AND v.idn_name="{0}" ORDER BY ss.id DESC LIMIT 1;'''
         data = self.db.load_object(ssql.format(zone))
+
         if data:
-            try:
-                data['key'] = key if key else self.crypter.decrypt(bytes(data['key']))
-            except:
-                result['errors'] = 'Отсутствует ключ для установки'
-                self.logger(self.user.username, 'Thereis no key for %s' % self.cleaned_data['zone'])
+            for k in 'crt', 'key':
+                try:
+                    data[k] = key if key else self.crypter.decrypt(bytes(data[k]))
+                except:
+                    result['errors'] = 'Отсутствует %s для установки' % k
+                    self.logger(self.user.username, 'Thereis no %s for %s' % (k, self.cleaned_data['zone']))
             try:
                 data['crt'] = crt if crt else self.crypter.decrypt(bytes(data['crt']))
             except:
@@ -207,11 +206,9 @@ class InstallForm(SslManager, forms.Form, Logger):
                 if not data['ip'] :
                     result['errors'] = 'Домен не привязан к выделенному адресу'
                     self.logger(self.user.username, 'No additional ip %s' % self.cleaned_data['zone'])
-
         else:
             result['errors'] = 'Отсутствуют данные для установки'
             self.logger(self.user.username, 'Thereis no data for %s' % self.cleaned_data['zone'])
-
         if not result['errors']:
             if self.check_idn_name(zone):
                 if self.check_associate_cert_with_private_key(data['crt'], data['key']):
@@ -223,27 +220,23 @@ class InstallForm(SslManager, forms.Form, Logger):
                         if data['ip']:
                             self.logger(self.user.username, 'New ip is: %s' % data['ip'])
                             self.soap_add_ip(data['ip'], data['server'], data['customer_id'])
-                            self.update_a_dns(fqdn, data['ip'])
+                            self.update_a_dns(zone, data['ip'])
                             self.update_ip_id(zone, data['ip'])
                         else:
                             result['errors'] = 'no new ip'
-                            self.logger(self.user.username, 'No new ip, domain: %s' % self.cleaned_data['zone'])
+                            self.logger(self.user.username, 'No new ip, domain: %s' % zone)
                     if not result['errors']:
-                        self.update_adv_services(fqdn, data['ip'], data['customer_id'], service_type)
+                        self.update_adv_services(zone, data['ip'], data['customer_id'], service_type)
                         self.update_ssl_storage(zone, self.crypter.encrypt(bytes(data['key'])), self.crypter.encrypt(bytes(data['crt'])))
                         if root_certs:
                             data['crt'] = self.add_root_certs(data['crt'], root_certs)
-                        self.logger(self.user.username, 'domain : %s , ip : %s , server : %s , send soap install ssl' % (self.cleaned_data['zone'], data['ip'], data['server']))
+                        self.logger(self.user.username, 'domain : %s , ip : %s , server : %s , send soap install ssl' % (zone, data['ip'], data['server']))
                         self.soap_install_sll(data['server'], zone, data['directory'], data['ip'], data['crt'], data['key'], data['php_version'])
-                            #time.sleep(10)
-                            #if not self.check_ssl_install(fqdn, data['ip']):
-                            #    result['errors'] = 'Домен не отвечает по HTTPS'
-                            #    self.logger(self.user.username, 'HTTPS check failed: %s' % self.cleaned_data['zone'])
                 else:
                     result['errors'] = 'Ошибка соответствия сертификата и ключа'
-                    self.logger(self.user.username, 'Check associate key and crt failed. %s' % self.cleaned_data['zone'])
+                    self.logger(self.user.username, 'Check associate key and crt failed. %s' % zone)
             else:
                 result['errors'] = 'Поле idn.name не соответствует fqdn'
-                self.logger(self.user.username, 'IDN check failed. %s' % self.cleaned_data['zone'])
+                self.logger(self.user.username, 'IDN check failed. %s' % zone)
         print(result['errors'])
         return result
