@@ -72,7 +72,7 @@ class SslManager():
         self.db.set_query('INSERT INTO billing.dns_records (fqdn, type, value) VALUES ("{0}", "a", "{1}")'.format(zone, ip))
         self.db.set_query('UPDATE billing.vhosts SET serial=serial+1 WHERE fqdn=idn_name AND fqdn="{0}";'.format(zone))
 
-    def update_ip_id(self, zone, ip, wildcard):
+    def update_ip_id(self, zone, ip):
         self.db.set_query('UPDATE billing.vhosts SET ip_id=(SELECT id FROM billing.ip_addr WHERE ip="{0}") WHERE idn_name="{1}";'.format(ip, zone))
         if zone[0:1] == '*':
             self.db.set_query('UPDATE billing.vhosts SET ip_id=(SELECT id FROM billing.ip_addr WHERE ip="{0}") WHERE idn_name="{1}";'.format(ip, zone[2:]))
