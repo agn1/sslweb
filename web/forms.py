@@ -102,15 +102,16 @@ class ShowForm(forms.Form, SslManager, Logger):
         self.logger(self.user.username, 'show SSL %s' % zone)
         sql = '''SELECT crt, `key` FROM system.ssl_storage WHERE full_fqdn = "{0}" ORDER BY dt DESC LIMIT 1;'''.format(zone)
         encrypted = self.db.load_object(sql)
-        for key in encrypted:
-            if len(encrypted[key]) > 0:
-                try:
-                    data[key] = self.crypter.decrypt(bytes(encrypted[key]))
-                except:
-                    self.logger(self.user.username, 'error: decrypt %s of %s failed' % (key, zone))
-                    data[key] = 'Broken'
-            else:
-                data[key] = 'Empty'
+        if encrypted:
+            for key in encrypted:
+                if len(encrypted[key]) > 0:
+                    try:
+                        data[key] = self.crypter.decrypt(bytes(encrypted[key]))
+                    except:
+                        self.logger(self.user.username, 'error: decrypt %s of %s failed' % (key, zone))
+                        data[key] = 'Broken'
+                else:
+                    data[key] = 'Empty'
         return data
 
 
