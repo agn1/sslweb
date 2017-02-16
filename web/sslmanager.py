@@ -118,7 +118,10 @@ class SslManager():
                 usql = 'UPDATE system.ssl_storage SET crt="{0}" WHERE id={1}'
                 self.db.set_query(usql.format(crt, ssldata['id']))
             else:
-                if not self.check_associate_cert_with_private_key(self.crypter.decrypt(bytes(crt)), self.crypter.decrypt(bytes(ssldata['key']))):
+                if self.check_associate_cert_with_private_key(self.crypter.decrypt(bytes(crt)), self.crypter.decrypt(bytes(ssldata['key']))):
+                    if self.crypter.decrypt(bytes(crt)) != self.crypter.decrypt(bytes(ssldata['crt'])):
+                        self.db.set_query(isql.format(zone, key, crt))
+                else:
                     self.db.set_query(isql.format(zone, key, crt))
         else:
             self.db.set_query(isql.format(zone, key, crt))
