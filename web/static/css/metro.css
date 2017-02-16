@@ -12940,8 +12940,8 @@ input[type="submit"].link:active {
 }
 .notify-container {
   position: fixed;
-  top: 120px;
-  right: 60px;
+  bottom: 120px;
+  right: 55px;
   width: auto;
   z-index: 1061;
 }
