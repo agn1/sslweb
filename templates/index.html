@@ -238,23 +238,25 @@
             if(formid == 'roots'){
               $('textarea[name="roots"]').val(result.crt);
             }
+            if ('errors' in result && result['errors'] !== false){
+              ntype = 'alert'
+              message = result.errors;
+            }
+            else {
+              ntype = 'success'
+              message = result.responseText;
+            }
+            notify(formid, message, ntype);
           })
         .fail(function(result) {
             console.log('FAIL');
             console.log(result);
+            notify(formid, result.responseText, 'alert');
           })
         .always(function(result){
           $('#'+formid+" button").removeClass(buttonclass).attr('disabled', false);
           $('#preloader').hide();
-          if ('errors' in result){
-            ntype = 'alert'
-            message = result.errors;
-          }
-          else {
-            ntype = 'success'
-            message = result.responseText;
-          }
-          notify(formid, message, ntype);
+
         });
         return false;
       }
