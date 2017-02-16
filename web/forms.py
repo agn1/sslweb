@@ -198,7 +198,7 @@ class InstallForm(SslManager, forms.Form, Logger):
                     self.logger(self.user.username, 'Thereis no %s for %s' % (k, zone))
             if 'ip' in data and not newip:
                 if serverip:
-                    data['ip'] = self.db.load_object('SELECT ip FROM billing.servers WHERE name="%s"' % data['server'])
+                    data['ip'] = self.db.load_object('SELECT ip FROM billing.servers WHERE name="%s"' % data['server'])['ip']
                 elif not data['ip'] and not serverip:
                     result['errors'] = 'Домен не привязан к выделенному адресу'
                     self.logger(self.user.username, 'No additional ip %s' % zone)
