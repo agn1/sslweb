@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <title>SSL TW</title>
     <link href="/static/css/metro.css" rel="stylesheet">
     <link href="/static/css/metro-icons.css" rel="stylesheet">
     <script src="/static/js/jquery-2.1.3.min.js"></script>
@@ -75,6 +76,11 @@
               <input type="checkbox" name="newip">
               <span class="check"></span>
               <span class="caption">Выделить новый Ip адрес</span>
+          </label>
+          <label class="input-control checkbox">
+              <input type="checkbox" name="serverip">
+              <span class="check"></span>
+              <span class="caption">Установить на Ip адрес сервера</span>
           </label>
         </br>
           <h4>Добавить корневые сертификаты:</h4>
@@ -233,23 +239,25 @@
             if(formid == 'roots'){
               $('textarea[name="roots"]').val(result.crt);
             }
+            if ('errors' in result && result['errors'] !== false){
+              ntype = 'alert'
+              message = result.errors;
+            }
+            else {
+              ntype = 'success'
+              message = result.responseText;
+            }
+            notify(formid, message, ntype);
           })
         .fail(function(result) {
             console.log('FAIL');
             console.log(result);
+            notify(formid, result.responseText, 'alert');
           })
         .always(function(result){
           $('#'+formid+" button").removeClass(buttonclass).attr('disabled', false);
           $('#preloader').hide();
-          if ('errors' in result){
-            ntype = 'alert'
-            message = result.errors;
-          }
-          else {
-            ntype = 'success'
-            message = result.responseText;
-          }
-          notify(formid, message, ntype);
+
         });
         return false;
       }
