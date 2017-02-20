@@ -64,6 +64,17 @@
           </div>
           <button type="submit" class="button  bg-darkCobalt bg-active-darkPink fg-white">Установить</button>
         <h4>Дополнительная услуга:</h4>
+        <label class="input-control checkbox">
+            <input type="checkbox" name="newip">
+            <span class="check"></span>
+            <span class="caption">Выделить новый Ip адрес</span>
+        </label>
+        <label class="input-control checkbox">
+            <input type="checkbox" name="serverip">
+            <span class="check"></span>
+            <span class="caption">Установить на Ip адрес сервера</span>
+        </label>
+        </br>
         <select name="service_type" data-validate-func="required">
                     <option value="" selected="">Выберите доп услугу</option>
                     <option value="11">Плтаный SSL cертификат(11)</option>
@@ -71,17 +82,6 @@
                     <option value="85">Let's Encrypt(85)</option>
                     <option value="59">Платный Wildcard(59)</option>
         </select>
-
-          <label class="input-control checkbox">
-              <input type="checkbox" name="newip">
-              <span class="check"></span>
-              <span class="caption">Выделить новый Ip адрес</span>
-          </label>
-          <label class="input-control checkbox">
-              <input type="checkbox" name="serverip">
-              <span class="check"></span>
-              <span class="caption">Установить на Ip адрес сервера</span>
-          </label>
         </br>
           <h4>Добавить корневые сертификаты:</h4>
           <label class="input-control radio">
