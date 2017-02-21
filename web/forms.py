@@ -193,7 +193,7 @@ class InstallForm(SslManager, forms.Form, Logger):
             for k in 'crt', 'key':
                 try:
                     ## get crt and key, if it posted cut not ascii symbols else get it from database
-                    data[k] = ''.join(i for i in self.cleaned_data[k] if ord(self.cleaned_data[k])<128) if len(self.cleaned_data[k])>0 else self.crypter.decrypt(bytes(data[k]))
+                    data[k] = ''.join(i for i in self.cleaned_data[k] if ord(i)<128) if len(self.cleaned_data[k])>0 else self.crypter.decrypt(bytes(data[k]))
                 except Exception as e:
                     print(str(e))
                     result['errors'] = 'Отсутствует %s для установки' % k
