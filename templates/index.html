@@ -8,7 +8,6 @@
     <script src="/static/js/metro.js"></script>
 </head>
 <body>
-    <div id='preloader' style='display:none' data-role="preloader" data-type="metro" data-style="dark"></div>
     <div class="wrapper padding60">
       {% if user.is_authenticated %}
       <div style="float:right;width:auto;display: inline-block;" class="app-bar" >
@@ -175,7 +174,7 @@
         </label>
         </form>
       </div>
-
+<div id='preloader' style='display:none' data-role="preloader" data-type="metro" data-style="dark"></div>
     </div>
     <script>
       var ids = ['install', 'show', 'generate', 'delete', 'roots'];
