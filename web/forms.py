@@ -135,21 +135,21 @@ class DeleteForm(SslManager, forms.Form, Logger):
         result = {'responseText': 'Ok'}
         sql_data = self.db.load_object('''SELECT customer_id, server
             FROM billing.vhosts WHERE idn_name="{0}" LIMIT 1;'''.format(self.cleaned_data['zone']))
-        if self.cleaned_data['delencrypt']:
-            if sql_data:
+        if sql_data:
+            if self.cleaned_data['delencrypt']:
                 sql = '''DELETE FROM billing.adv_services  WHERE service_type="85"
                     AND customer_id="{0}" AND (requested_data="{1}" OR requested_data="");'''.format(
                     sql_data['customer_id'], zone)
                 self.db.set_query(sql)
-            else:
-                self.logger(self.user.username, 'thereis no adv service LEt\'s Encrypt for %s' % zone)
-                result['errors'] = 'Доп услуги Let\'s Encrypt нет'
-        try:
-            self.soap_delete_zone(sql_data['server'], zone)
-        except Exception as e:
-            result['errors'] = 'Ошибка SOAP запроса'
-            self.logger(self.user.username, str(e))
-            self.logger(self.user.username, 'Delete soap failed for %s' % zone)
+            try:
+                self.soap_delete_zone(sql_data['server'], zone)
+            except Exception as e:
+                result['errors'] = 'Ошибка SOAP запроса'
+                self.logger(self.user.username, str(e))
+                self.logger(self.user.username, 'Delete soap failed for %s' % zone)
+        else:
+            self.logger(self.user.username, 'Domain %s is not exist in database' % zone)
+            result['errors'] = 'Домен не существует'    
         return result
 
 
