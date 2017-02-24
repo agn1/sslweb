@@ -12941,7 +12941,6 @@ input[type="submit"].link:active {
 .notify-container {
   position: fixed;
   top: 10%;
-  right: 10%;
   width: auto;
   min-width: 400px;
   z-index: 1061;
