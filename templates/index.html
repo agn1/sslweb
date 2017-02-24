@@ -194,12 +194,12 @@
       function genssl(){
         $('textarea[name="csr"]').text(result.csr);
       }
-      function notify(caption, content, type){
+      function notify(caption, content, type, timeout){
         $.Notify({
           caption: caption,
           content: content,
           type: type,
-          timeout: 15000,
+          timeout: timeout,
         //  keepOpen: true,
       });
     }
@@ -245,19 +245,23 @@
               $('textarea[name="roots"]').val(result.crt);
             }
             if ('errors' in result && result['errors'] !== false){
-              ntype = 'alert'
+              ntype = 'alert';
               message = result.errors;
+              timeout = 30000;
+              header = 'Ошибка';
             }
             else {
-              ntype = 'success'
+              header = 'Успешно';
+              ntype = 'success';
               message = result.responseText;
+              timeout = 5000;
             }
-            notify(formid, message, ntype);
+            notify(header, message, ntype, timeout);
           })
         .fail(function(result) {
             console.log('FAIL');
             console.log(result);
-            notify(formid, result.responseText, 'alert');
+            notify(formid, result.responseText, 'alert', 30000);
           })
         .always(function(result){
           $('#'+formid+" button").removeClass(buttonclass).attr('disabled', false);
