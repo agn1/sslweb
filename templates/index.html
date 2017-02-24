@@ -10,8 +10,9 @@
 <body>
   {% if user.is_authenticated %}
   <div class="app-bar" >
-
-    <li><a href="">TimeWEb SSL</a></li>
+    <ul class="app-bar-menu">
+      <li><a href="">TimeWEb SSL</a></li>
+    </ul>
     <ul class="app-bar-menu place-right" data-flexdirection="reverse">
       <li data-flexorderorigin="1" data-flexorder="2"><a href=""><span class="mif-user icon"></span>{{user.get_full_name}}</a></li>
       <div class="app-bar-divider"></div>
