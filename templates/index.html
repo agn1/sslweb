@@ -8,19 +8,16 @@
     <script src="/static/js/metro.js"></script>
 </head>
 <body>
-
   {% if user.is_authenticated %}
-  <div class="wrapper padding10">
-    <div class="app-bar" >
-      <ul class="app-bar-menu">
-        <li>TimeWEb SSL</li>
-      </ul>
-      <ul class="app-bar-menu place-right" data-flexdirection="reverse">
-        <li data-flexorderorigin="1" data-flexorder="2"><a href=""><span class="mif-user icon"></span>{{user.get_full_name}}</a></li>
-        <div class="app-bar-divider"></div>
-        <li data-flexorderorigin="2" data-flexorder="3"><a href="/logout"><span class="mif-logout icon"></span>Выход</a></li>
-      </ul>
-    </div>
+  <div class="app-bar" >
+    <ul class="app-bar-menu">
+      <li><a href="">TimeWEb SSL</a></li>
+    </ul>
+    <ul class="app-bar-menu place-right" data-flexdirection="reverse">
+      <li data-flexorderorigin="1" data-flexorder="2"><a href=""><span class="mif-user icon"></span>{{user.get_full_name}}</a></li>
+      <div class="app-bar-divider"></div>
+      <li data-flexorderorigin="2" data-flexorder="3"><a href="/logout"><span class="mif-logout icon"></span>Выход</a></li>
+    </ul>
   </div>
   {% endif %}
 
