@@ -134,7 +134,7 @@ class DeleteForm(SslManager, forms.Form, Logger):
         self.logger(self.user.username, 'Delete SSL %s' % zone)
         result = {'responseText': 'Ok'}
         sql_data = self.db.load_object('''SELECT customer_id, server
-            FROM billing.vhosts WHERE fqdn="{0}" LIMIT 1;'''.format(self.cleaned_data['zone']))
+            FROM billing.vhosts WHERE idn_name="{0}" LIMIT 1;'''.format(self.cleaned_data['zone']))
         if self.cleaned_data['delencrypt']:
             if sql_data:
                 sql = '''DELETE FROM billing.adv_services  WHERE service_type="85"
@@ -148,6 +148,7 @@ class DeleteForm(SslManager, forms.Form, Logger):
             self.soap_delete_zone(sql_data['server'], zone)
         except Exception as e:
             result['errors'] = 'Ошибка SOAP запроса'
+            self.logger(self.user.username, str(e))
             self.logger(self.user.username, 'Delete soap failed for %s' % zone)
         return result
 
