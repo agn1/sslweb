@@ -102,6 +102,11 @@
               <span class="check"></span>
               <span class="caption">Let's Encrypt</span>
           </label>
+          <label class="input-control radio">
+              <input type="radio" name="root_certs" value="thawte.crt">
+              <span class="check"></span>
+              <span class="caption">Thawte</span>
+          </label>
           <h4>Укажите сертификат и ключ к нему(если есть):</h4>
           <div style="width:600px;height:400px"  class="input-control textarea" data-role="input" data-text-auto-resize="false">
               <textarea name='crt' placeholder="Введите сертификат CRT"></textarea>
@@ -160,7 +165,7 @@
           <button type="submit" class="button bg-darkCobalt bg-active-darkPink fg-white">Показать</button>
         </br>
           <div style="width:600px;height:600px" class="input-control textarea" data-role="input" data-text-auto-resize="true">
-              <textarea name="roots" disabled placeholder="Сертификаты отобразятся здесь"></textarea>
+              <textarea name="roots" placeholder="Сертификаты отобразятся здесь"></textarea>
           </div>
         </form>
         <form id="delete" style="display:none" data-role="validator" data-on-submit="return postData('delete');">
