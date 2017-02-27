@@ -15,8 +15,7 @@ def check_zone(function):
     def wrapper(self):
         zone = self.cleaned_data['zone'].encode('idna')
         if 'timeweb' in self.cleaned_data['zone']:
-            self.cleaned_data['zone'] = None
-            return function(self)
+            self.cleaned_data['zone'] = 'TW'
         return function(self)
     return wrapper
 
