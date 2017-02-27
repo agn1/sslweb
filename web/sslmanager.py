@@ -11,6 +11,20 @@ import requests
 import json
 
 
+def check_zone(function):
+    def wrapper(self):
+        zone = self.cleaned_data['zone'].encode('idna')
+        if 'timeweb' not in self.cleaned_data['zone']:
+            return function(self)
+        return False if 'timeweb' in zone else function(self)
+    return wrapper
+
+
+    zone = zone if zone[:4] != 'www.' else zone[4:]
+    if 'timeweb' in zone:
+        result['errors'] =  'Атата по рукам'
+    return zone
+
 class SslManager():
 
     def __init__(self):
@@ -19,7 +33,6 @@ class SslManager():
         self.comodo_file = '/home/sslweb/comodo.crt'
         self.letsencrypt_file = '/home/sslweb/letsencrypt.crt'
         self.crypter = Fernet('VCNu9lxyYQ16OCb2SmgIdF0WESqeJp_8PIg76AlMWDI=')
-
 
     def is_ascii(self, s):
         return all(ord(c) < 128 for c in s)

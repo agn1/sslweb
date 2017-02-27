@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django import forms
 from django.db import connections
-from sslmanager import SslManager
+from sslmanager import SslManager, check_zone
 from django.contrib.auth import authenticate, login
 import time
 
@@ -129,6 +129,7 @@ class DeleteForm(SslManager, forms.Form, Logger):
     zone = forms.CharField(error_messages=my_default_errors)
     delencrypt = forms.CharField(error_messages=my_default_errors, required=False)
 
+    @check_zone
     def deletessl(self):
         zone = self.cleaned_data['zone'].encode('idna')
         self.logger(self.user.username, 'Delete SSL %s' % zone)
@@ -144,12 +145,12 @@ class DeleteForm(SslManager, forms.Form, Logger):
             try:
                 self.soap_delete_zone(sql_data['server'], zone)
             except Exception as e:
-                result['errors'] = 'Ошибка SOAP запроса'
+                result['errors'] = 'Ошибка удаления сертификата. SOAP failed'
                 self.logger(self.user.username, str(e))
                 self.logger(self.user.username, 'Delete soap failed for %s' % zone)
         else:
             self.logger(self.user.username, 'Domain %s is not exist in database' % zone)
-            result['errors'] = 'Домен не существует'    
+            result['errors'] = 'Домен не существует'
         return result
 
 
@@ -170,13 +171,14 @@ class InstallForm(SslManager, forms.Form, Logger):
     newip = forms.CharField(error_messages=my_default_errors, required=False)
     serverip = forms.CharField(error_messages=my_default_errors, required=False)
 
+    @check_zone
     def installssl(self):
         result = {'responseText': 'Ok', 'errors': False}
         zone  = self.cleaned_data['zone'].encode('idna')
         zone = zone if zone[:4] != 'www.' else zone[4:]
-        if 'timeweb' in zone:
-            result['errors'] =  'Атата по рукам'
-            self.logger(self.user.username, 'Need to break arms, input domain %s' % self.cleaned_data['zone'])
+#        if 'timeweb' in zone:
+#            result['errors'] =  'Атата по рукам'
+#            self.logger(self.user.username, 'ALERT! Input domain: %s' % self.cleaned_data['zone'])
         newip = self.cleaned_data['newip']
         service_type = self.cleaned_data['service_type']
         serverip = self.cleaned_data['serverip']
@@ -203,7 +205,7 @@ class InstallForm(SslManager, forms.Form, Logger):
                 if serverip:
                     data['ip'] = self.db.load_object('SELECT ip FROM billing.servers WHERE name="%s"' % data['server'])['ip']
                 elif not data['ip'] and not serverip:
-                    result['errors'] = 'Домен не привязан к выделенному адресу'
+                    result['errors'] = 'Домен не привязан к выделенному адресу в дополнительных услугах'
                     self.logger(self.user.username, 'No additional ip %s' % zone)
 
         else:
@@ -223,7 +225,7 @@ class InstallForm(SslManager, forms.Form, Logger):
                             self.update_a_dns(zone, data['ip'])
                             self.update_ip_id(zone, data['ip'])
                         else:
-                            result['errors'] = 'no new ip'
+                            result['errors'] = 'Не удалось выделить новый ip адрес'
                             self.logger(self.user.username, 'No new ip, domain: %s' % zone)
                     if not result['errors']:
                         self.update_adv_services(zone, data['ip'], data['customer_id'], service_type)
