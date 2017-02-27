@@ -14,9 +14,10 @@ import json
 def check_zone(function):
     def wrapper(self):
         zone = self.cleaned_data['zone'].encode('idna')
-        if 'timeweb' not in self.cleaned_data['zone']:
+        if 'timeweb' in self.cleaned_data['zone']:
+            self.cleaned_data['zone'] = None
             return function(self)
-        return False if 'timeweb' in zone else function(self)
+        return function(self)
     return wrapper
 
 
