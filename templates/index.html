@@ -165,7 +165,7 @@
           <button type="submit" class="button bg-darkCobalt bg-active-darkPink fg-white">Показать</button>
         </br>
           <div style="width:600px;height:600px" class="input-control textarea" data-role="input" data-text-auto-resize="true">
-              <textarea name="roots" placeholder="Сертификаты отобразятся здесь"></textarea>
+              <textarea name="root" placeholder="Сертификаты отобразятся здесь"></textarea>
           </div>
         </form>
         <form id="delete" style="display:none" data-role="validator" data-on-submit="return postData('delete');">
@@ -247,7 +247,7 @@
               //download(zone+'.ssl', result.crt+result.key);
             }
             if(formid == 'roots'){
-              $('textarea[name="roots"]').val(result.crt);
+              $('textarea[name="root"]').val(result.crt);
             }
             if ('errors' in result && result['errors'] !== false){
               ntype = 'alert';
