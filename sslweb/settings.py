@@ -44,8 +44,7 @@ AUTH_LDAP_BIND_PASSWORD = "l24xG@mDHV5U3ji"
 AUTH_LDAP_USER_SEARCH = LDAPSearch("cn=accounts,dc=timeweb,dc=ru", ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
 AUTH_LDAP_GROUP_SEARCH = LDAPSearch("cn=groups,cn=accounts,dc=timeweb,dc=ru", ldap.SCOPE_SUBTREE, "(objectClass=groupofnames)")
 AUTH_LDAP_GROUP_TYPE = GroupOfNamesType()
-AUTH_LDAP_REQUIRE_GROUP = "cn=vapi,cn=
-vapi_info,cn=groups,cn=accounts,dc=timeweb,dc=ru"
+AUTH_LDAP_REQUIRE_GROUP = "cn=vapi,cn=vapi_info,cn=groups,cn=accounts,dc=timeweb,dc=ru"
 
 # Populate the Django user from the LDAP directory.
 AUTH_LDAP_USER_ATTR_MAP = {
