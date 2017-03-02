@@ -20,11 +20,6 @@ def check_zone(function):
     return wrapper
 
 
-    zone = zone if zone[:4] != 'www.' else zone[4:]
-    if 'timeweb' in zone:
-        result['errors'] =  'Атата по рукам'
-    return zone
-
 class SslManager():
 
     def __init__(self):
@@ -100,7 +95,7 @@ class SslManager():
                         SET requested_data='{0}' WHERE id='{1}';'''.format('{"fqdn": "%s"}' % zone, i['id'])
                     )
                     break
-                elif zone in i['requested_data']:# or i['requested_data'] == zone:
+                elif '"'+zone+'"' in i['requested_data'] or zone == i['requested_data']:
                     self.db.set_query('''UPDATE billing.adv_services
                         SET info='{0}' WHERE id='{1}';'''.format(ip, i['id'])
                     )
