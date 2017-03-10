@@ -224,6 +224,7 @@ class InstallForm(SslManager, forms.Form, Logger):
                             self.soap_add_ip(data['ip'], data['server'], data['customer_id'])
                             self.update_a_dns(zone, data['ip'])
                             self.update_ip_id(zone, data['ip'])
+                            result['responseText'] = 'Ok'
                         else:
                             result['errors'] = 'Не удалось выделить новый ip адрес'
                             self.logger(self.user.username, 'No new ip, domain: %s' % zone)
