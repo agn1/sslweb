@@ -61,7 +61,7 @@
       <div class="content" style="margin-left:230px">
         <form id="install"  data-role="validator" data-on-submit="return postData('install')">
           {% csrf_token %}
-          <h4>Введите домен</h4>
+          <h4>Укажите домен</h4>
           <div style="width:300px" class="input-control text">
             <input name="zone"  data-validate-func="required" type="text">
           </div>
@@ -80,10 +80,10 @@
         </br>
         <select name="service_type" data-validate-func="required">
                     <option value="" selected="">Выберите доп услугу</option>
-                    <option value="11">Плтаный SSL cертификат(11)</option>
-                    <option value="3">Собственный сертификат, платный ip(3)</option>
-                    <option value="85">Let's Encrypt(85)</option>
-                    <option value="59">Платный Wildcard(59)</option>
+                    <option value="11">SSL cертификат Comodo 123</option>
+                    <option value="3">Платный IP</option>
+                    <option value="85">Let's Encrypt</option>
+                    <option value="59">Wildcard Comodo</option>
         </select>
         </br>
           <h4>Добавить корневые сертификаты:</h4>
