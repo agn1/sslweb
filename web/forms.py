@@ -168,8 +168,7 @@ class InstallForm(SslManager, forms.Form, Logger):
     key = forms.CharField(error_messages=my_default_errors, required=False)
     service_type = forms.CharField(error_messages=my_default_errors)
     root_certs = forms.CharField(error_messages=my_default_errors, required=False)
-    newip = forms.CharField(error_messages=my_default_errors, required=False)
-    serverip = forms.CharField(error_messages=my_default_errors, required=False)
+    sslip = forms.CharField(error_messages=my_default_errors)
 
     @check_zone
     def installssl(self):
@@ -179,9 +178,8 @@ class InstallForm(SslManager, forms.Form, Logger):
 #        if 'timeweb' in zone:
 #            result['errors'] =  'Атата по рукам'
 #            self.logger(self.user.username, 'ALERT! Input domain: %s' % self.cleaned_data['zone'])
-        newip = self.cleaned_data['newip']
+        sslip = self.cleaned_data['sslip']
         service_type = self.cleaned_data['service_type']
-        serverip = self.cleaned_data['serverip']
         root_certs = self.cleaned_data['root_certs'] if self.cleaned_data['root_certs'] != 'None' else None
         ssql = '''SELECT s.customer_id, s.directory, s.php_version, s.pagespeed_enabled, v.fqdn,
                             v.server, i.ip, cst.dealer, bs.ip as serverip, ss.provider, ss.crt, ss.key
@@ -201,10 +199,10 @@ class InstallForm(SslManager, forms.Form, Logger):
                     print(str(e))
                     result['errors'] = 'Отсутствует %s для установки' % k
                     self.logger(self.user.username, 'There is no %s for %s' % (k, zone))
-            if 'ip' in data and not newip:
-                if serverip:
+            if 'ip' in data and sslip != 'newip':
+                if sslip == 'serverip':
                     data['ip'] = self.db.load_object('SELECT ip FROM billing.servers WHERE name="%s"' % data['server'])['ip']
-                elif not data['ip'] and not serverip:
+                elif not data['ip'] and sslip == 'currentip':
                     result['errors'] = 'Домен не привязан к выделенному адресу в дополнительных услугах'
                     self.logger(self.user.username, 'No additional ip %s' % zone)
 
@@ -214,8 +212,8 @@ class InstallForm(SslManager, forms.Form, Logger):
         if not result['errors']:
             if self.check_idn_name(zone):
                 if self.check_associate_cert_with_private_key(data['crt'], data['key']):
-                    self.logger(self.user.username, 'domain: %s , newip: %s , service_type: %s, start install ssl' % (zone, newip, service_type))
-                    if newip:
+                    self.logger(self.user.username, 'domain: %s , newip: %s , service_type: %s, start install ssl' % (zone, sslip, service_type))
+                    if sslip == 'newip':
                         target = self.db.load_object('SELECT purpose FROM billing.servers WHERE name="{0}"'.format(data['server']))['purpose']
                         target = target if target != 'hosting' else 'hosting-personal'
                         data['ip'] = self.get_free_ip(target)

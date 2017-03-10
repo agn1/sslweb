@@ -67,13 +67,18 @@
           </div>
           <button type="submit" class="button  bg-darkCobalt bg-active-darkPink fg-white">Установить</button>
         <h4>Дополнительная услуга:</h4>
-        <label class="input-control checkbox">
-            <input type="checkbox" name="newip">
+        <label class="input-control radio">
+            <input type="checkbox" name="sslip" value="currentip" checked>
+            <span class="check"></span>
+            <span class="caption">Адрес уже привязан</span>
+        </label>
+        <label class="input-control radio">
+            <input type="checkbox" name="sslip" value="newip">
             <span class="check"></span>
             <span class="caption">Выделить новый Ip адрес</span>
         </label>
-        <label class="input-control checkbox">
-            <input type="checkbox" name="serverip">
+        <label class="input-control radio">
+            <input type="checkbox" name="sslip" value="serverip">
             <span class="check"></span>
             <span class="caption">Установить на Ip адрес сервера</span>
         </label>
