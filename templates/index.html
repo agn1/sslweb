@@ -119,9 +119,9 @@
         <form id="generate" style="display:none" data-role="validator" data-on-submit="return postData('generate');">
           {% csrf_token %}
           <h4>Укажите данные для CSR</h4>
-          <button type="submit" class="button bg-darkCobalt bg-active-darkPink fg-white">Создать</button>
-          </br>
           <a target="_blank" href="https://confluence.timeweb.net/pages/viewpage.action?pageId=6619836#id-РегламентпоустановкеSSL-сертификатов-ПрисозданииCSRнеобходимыследующиеданныеввиде">формат данных</a>
+          </br>
+          <button type="submit" class="button bg-darkCobalt bg-active-darkPink fg-white">Создать</button>
           </br>
           <div style="width:600px"  class="input-control textarea" data-role="input" data-text-auto-resize="true">
               <textarea data-validate-func="required" name="csrtext" placeholder="Данные для CSR"></textarea>
