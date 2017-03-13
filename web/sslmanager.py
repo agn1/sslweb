@@ -74,8 +74,7 @@ class SslManager():
         return self.is_ascii(idn['idn_name']) if idn else False
 
     def update_a_dns(self, zone, ip):
-        if zone[0:1] == '*':
-            zone = zone[2:]
+        zone = zone[2:] if zone[0:1] == '*' else zone
         self.db.set_query('DELETE FROM billing.dns_records where fqdn="{0}" and type="a";'.format(zone))
         self.db.set_query('INSERT INTO billing.dns_records (fqdn, type, value) VALUES ("{0}", "a", "{1}")'.format(zone, ip))
         self.db.set_query('UPDATE billing.vhosts SET serial=serial+1 WHERE fqdn=idn_name AND fqdn="{0}";'.format(zone))
@@ -86,6 +85,7 @@ class SslManager():
             self.db.set_query('UPDATE billing.vhosts SET ip_id=(SELECT id FROM billing.ip_addr WHERE ip="{0}") WHERE idn_name="{1}";'.format(ip, zone[2:]))
 
     def update_adv_services(self, zone, ip, user, service_type):
+        zone = zone[2:] if zone[0:1] == '*' else zone
         adv = self.db.load_object_list('''SELECT id, info, requested_data FROM billing.adv_services WHERE customer_id="{user}"
             AND service_type="{service_type}";'''.format(user=user, service_type=service_type))
         if adv:
