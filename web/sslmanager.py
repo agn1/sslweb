@@ -50,6 +50,13 @@ class SslManager():
         except OpenSSL.SSL.Error:
             return False
 
+    def get_issuer(self, crt):
+        try:
+            cert_obj = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, crt)
+        except:
+            raise Exception('certificate is not correct: %s' % crt)
+        return cert_obj.get_issuer()
+
     def get_free_ip(self, target):
         result = None
         data = {"target": target, "location":"4", "ipv4":"true"}

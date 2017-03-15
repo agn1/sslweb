@@ -142,6 +142,10 @@
           <button type="submit" class="button bg-darkCobalt bg-active-darkPink fg-white">Показать</button>
           <h4>Данные SSL из бд:</h4>
 
+          <div style="width:300px" class="input-control text">
+            <input name="issuer" type="text">
+          </div>
+
           <div style="width:600px;height:600px"  class="input-control textarea" data-role="input" data-text-auto-resize="true">
               <textarea name="showcrt"  placeholder="Сертификат"></textarea>
           </div>
@@ -250,7 +254,7 @@
             if(formid == 'show'){
               $('textarea[name="showcrt"]').val(result.crt);
               $('textarea[name="showkey"]').val(result.key);
-              //download(zone+'.ssl', result.crt+result.key);
+              $('input[name="issuer"]').val(result.issuer);
             }
             if(formid == 'roots'){
               $('textarea[name="root"]').val(result.crt);

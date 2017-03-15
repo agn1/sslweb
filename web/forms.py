@@ -112,6 +112,9 @@ class ShowForm(forms.Form, SslManager, Logger):
                         data[key] = 'Broken'
                 else:
                     data[key] = 'Empty'
+            if 'crt' in data:
+                if data['crt'] != 'Empty':
+                    data['issuer'] = self.get_issuer(data['crt'])
         else:
             data['errors'] = 'Domain not exist'
         return data
