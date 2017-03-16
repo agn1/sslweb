@@ -145,7 +145,7 @@ class SslManager():
 
     def add_root_certs(self, crt):
         for f in listdir(self.rootcadir):
-            if f in self.get_issuer(crt) or f.upper() in self.get_issuer(crt):
+            if f in str(self.get_issuer(crt)) or f.upper() in str(self.get_issuer(crt)):
                 with open(self.rootcadir+f, 'r') as f:
                     if len(crt) > 0:
                         crt +=  '\n'
