@@ -231,7 +231,7 @@ class InstallForm(SslManager, forms.Form, Logger):
                     if not result['errors']:
                         self.update_adv_services(zone, data['ip'], data['customer_id'], service_type)
                         self.update_ssl_storage(zone, self.crypter.encrypt(bytes(data['key'])), self.crypter.encrypt(bytes(data['crt'])))
-                        if data['crt'].count('BEGIN CERTIFICATE') > 1:
+                        if data['crt'].count('BEGIN CERTIFICATE') == 1:
                             data['crt'] = self.add_root_certs(data['crt'])
                         self.logger(self.user.username, 'domain : %s , ip : %s , server : %s , send soap install ssl' % (zone, data['ip'], data['server']))
                         self.soap_install_sll(data['server'], zone, data['directory'], data['ip'], data['crt'], data['key'], data['php_version'])
