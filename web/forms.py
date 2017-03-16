@@ -183,7 +183,6 @@ class InstallForm(SslManager, forms.Form, Logger):
 #            self.logger(self.user.username, 'ALERT! Input domain: %s' % self.cleaned_data['zone'])
         sslip = self.cleaned_data['sslip']
         service_type = self.cleaned_data['service_type']
-        root_certs = self.cleaned_data['root_certs'] if self.cleaned_data['root_certs'] != 'None' else None
         ssql = '''SELECT s.customer_id, s.directory, s.php_version, s.pagespeed_enabled, v.fqdn,
                             v.server, i.ip, cst.dealer, bs.ip as serverip, ss.provider, ss.crt, ss.key
                             FROM billing.sites s, billing.vhosts v
@@ -210,7 +209,7 @@ class InstallForm(SslManager, forms.Form, Logger):
                     self.logger(self.user.username, 'No additional ip %s' % zone)
 
         else:
-            result['errors'] = 'Отсутствуют данные для установки'
+            result['errors'] = 'Домен не привязан к сайту'
             self.logger(self.user.username, 'Thereis no data for %s' % zone)
         if not result['errors']:
             if self.check_idn_name(zone):
@@ -232,8 +231,8 @@ class InstallForm(SslManager, forms.Form, Logger):
                     if not result['errors']:
                         self.update_adv_services(zone, data['ip'], data['customer_id'], service_type)
                         self.update_ssl_storage(zone, self.crypter.encrypt(bytes(data['key'])), self.crypter.encrypt(bytes(data['crt'])))
-                        if root_certs:
-                            data['crt'] = self.add_root_certs(data['crt'], root_certs)
+                        if data['crt'].count('BEGIN CERTIFICATE') > 1:
+                            data['crt'] = self.add_root_certs(data['crt'])
                         self.logger(self.user.username, 'domain : %s , ip : %s , server : %s , send soap install ssl' % (zone, data['ip'], data['server']))
                         self.soap_install_sll(data['server'], zone, data['directory'], data['ip'], data['crt'], data['key'], data['php_version'])
                 else:

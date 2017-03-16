@@ -9,6 +9,7 @@ from twtools import soap
 from subprocess import Popen, PIPE
 import requests
 import json
+from os import listdir
 
 
 def check_zone(function):
@@ -24,6 +25,7 @@ class SslManager():
 
     def __init__(self):
         self.db = dbw.DBClient('billing')
+        self.rootcadir = 'rootca/'
         self.logfile = '/var/log/install_ssl.log'
         self.comodo_file = '/home/sslweb/comodo.crt'
         self.letsencrypt_file = '/home/sslweb/letsencrypt.crt'
@@ -141,11 +143,13 @@ class SslManager():
         else:
             self.db.set_query(isql.format(zone, key, crt))
 
-    def add_root_certs(self, crt, ca):
-        with open(ca, 'r') as f:
-            if len(crt) > 0:
-                crt +=  '\n'
-            crt += ''.join(f.readlines())
+    def add_root_certs(self, crt):
+        for f in listdir(self.rootcadir):
+            if f in self.get_issuer(crt) or f.upper() in self.get_issuer(crt):
+                with open(self.rootcadir+f, 'r') as f:
+                    if len(crt) > 0:
+                        crt +=  '\n'
+                        crt += ''.join(f.readlines())
         return crt
 
     def soap_install_sll(self, server, zone, root_path, nginx_ip, crt, key, php_version):
