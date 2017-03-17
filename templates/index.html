@@ -136,14 +136,14 @@
         <form id="roots" style="display:none" data-role="validator" data-on-submit="return postData('roots');">
           {% csrf_token %}
           <h4>Выберите поставщика</h4>
-          <label class="input-control radio">
+
           {% for r in view.listrootca %}
+          <label class="input-control radio">
                 <input type="radio" name="roots" checked value="{{ r }}">
                 <span class="check"></span>
                 <span class="caption">{{ r }}</span>
-          {% endfor %}
           </label>
-
+          {% endfor %}
           <button type="submit" class="button bg-darkCobalt bg-active-darkPink fg-white">Показать</button>
         </br>
           <div style="width:600px;height:600px" class="input-control textarea" data-role="input" data-text-auto-resize="true">
