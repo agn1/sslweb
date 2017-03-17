@@ -30,7 +30,7 @@ class IndexView(TemplateView):
     template_name = 'index.html'
 
     def get_context_data(self, **kwargs):
-        ctx = super().get_context_data()
+        ctx = super(IndexView, self).get_context_data(*args, **kwargs)
         ctx['rootca'] = listdir('rootca')
         return ctx
 
