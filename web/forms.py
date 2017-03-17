@@ -82,8 +82,9 @@ class RootsForm(forms.Form, SslManager, Logger):
 
     def showroots(self):
         self.logger(self.user.username, 'show roots CERTS')
-        roots = self.cleaned_data['roots']
-        return {'crt': self.add_root_certs('', roots), 'responseText': 'Ok'}
+        with open('rootca'+self.cleaned_data['roots']) as f:
+            roots = f.readlines()
+        return {'crt': roots, 'responseText': 'Ok'}
 
 class ShowForm(forms.Form, SslManager, Logger):
     def __init__(self, *args, **kwargs):
