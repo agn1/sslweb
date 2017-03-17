@@ -26,13 +26,11 @@ class LogoutView(RedirectView):
 
 @method_decorator(decorators, name='dispatch')
 class IndexView(TemplateView):
-    context_object_name = 'ctx'
     template_name = 'index.html'
 
-    def get_context_data(self, *args, **kwargs):
-        ctx = super(IndexView, self).get_context_data(*args, **kwargs)
-        ctx['rootca'] = listdir('rootca')
-        return ctx
+    def listrootca(self):
+        return listdir('rootca')
+
 
 
 

@@ -136,7 +136,7 @@
         <form id="roots" style="display:none" data-role="validator" data-on-submit="return postData('roots');">
           {% csrf_token %}
           <h4>Выберите поставщика</h4>
-          {% for r in ctx %}
+          {% for r in view.listrootca %}
               {{ r }}
           {% endfor %}
           <label class="input-control radio">
