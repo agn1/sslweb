@@ -59,7 +59,7 @@
       </div>
 
       <div class="content" style="margin-left:230px">
-        <form id="install"  data-role="validator" data-on-submit="return postData('install')">
+        <form id="install"  data-role="validator" data-on-error-input="notifyOnErrorInput" data-on-submit="return postData('install')">
           {% csrf_token %}
           <h4>Укажите домен</h4>
           <div style="width:300px" class="input-control text">
