@@ -10,6 +10,7 @@ from django.utils.decorators import method_decorator
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.contrib.auth import logout
+from os import listdir
 
 
 decorators = [login_required(login_url='/login/')]
@@ -25,7 +26,14 @@ class LogoutView(RedirectView):
 
 @method_decorator(decorators, name='dispatch')
 class IndexView(TemplateView):
+    context_object_name = 'ctx'
     template_name = 'index.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data()
+        ctx['rootca'] = listdir('rootca')
+        return ctx
+
 
 
 class LoginView(FormView):

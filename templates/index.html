@@ -85,7 +85,7 @@
         </br>
         <select name="service_type" data-validate-func="required">
                     <option value="" selected="">Выберите доп услугу</option>
-                    <option value="11">SSL cертификат Comodo 123</option>
+                    <option value="11">SSL cертификат Comodo</option>
                     <option value="3">Платный IP</option>
                     <option value="85">Let's Encrypt</option>
                     <option value="59">Wildcard Comodo</option>
@@ -136,6 +136,9 @@
         <form id="roots" style="display:none" data-role="validator" data-on-submit="return postData('roots');">
           {% csrf_token %}
           <h4>Выберите поставщика</h4>
+          {% for r in ctx %}
+              {{ r }}
+          {% endif %}
           <label class="input-control radio">
               <input type="radio" name="roots" checked value="comodo.crt">
               <span class="check"></span>
