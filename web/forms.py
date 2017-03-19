@@ -164,13 +164,13 @@ class InstallForm(SslManager, forms.Form, Logger):
         SslManager.__init__(self)
 
     my_default_errors = {
-        'required': 'required',
-        'invalid': 'invalid'
+        'required': 'обязательно для заполнения',
+        'invalid': 'неверно введено'
     }
-    zone = forms.CharField(error_messages=my_default_errors)
-    crt = forms.CharField(error_messages=my_default_errors, required=False)
-    key = forms.CharField(error_messages=my_default_errors, required=False)
-    service_type = forms.CharField(error_messages=my_default_errors)
+    zone = forms.CharField(error_messages=my_default_errors, label='Домен')
+    crt = forms.CharField(error_messages=my_default_errors, required=False, label='Сертификат')
+    key = forms.CharField(error_messages=my_default_errors, required=False, label='Ключ')
+    service_type = forms.CharField(error_messages=my_default_errors, label='Дополнительная услуга')
     root_certs = forms.CharField(error_messages=my_default_errors, required=False)
     sslip = forms.CharField(error_messages=my_default_errors)
 
