@@ -37,12 +37,10 @@ class SslManager():
     def delete_passphrase_from_key(self, key, password):
         try:
             crypted = OpenSSL.crypto.load_privatekey(
-                OpenSSL.crypto.FILETYPE_PEM, key,
-                passphrase=password
+                OpenSSL.crypto.FILETYPE_PEM, key, password
                 )
             return OpenSSL.crypto.dump_privatekey(
-                OpenSSL.crypto.FILETYPE_PEM, crypted,
-                cipher=None, passphrase=password
+                OpenSSL.crypto.FILETYPE_PEM, crypted
                 )
         except:
             return None
