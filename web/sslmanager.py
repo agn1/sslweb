@@ -34,22 +34,29 @@ class SslManager():
     def is_ascii(self, s):
         return all(ord(c) < 128 for c in s)
 
+    def delete_passphrase_from_key(self, key, password):
+        try:
+            crypted = OpenSSL.crypto.load_privatekey(
+                OpenSSL.crypto.FILETYPE_PEM, key,
+                passphrase=password
+                )
+            return OpenSSL.crypto.dump_privatekey(
+                OpenSSL.crypto.FILETYPE_PEM, crypted,
+                cipher=None, passphrase=password
+                )
+        except:
+            return None
+
     def check_associate_cert_with_private_key(self, crt , key):
         try:
             private_key_obj = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, key)
-        except OpenSSL.crypto.Error:
-            raise Exception('private key is not correct: %s' % private_key)
-        try:
             cert_obj = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, crt)
-        except OpenSSL.crypto.Error:
-            raise Exception('certificate is not correct: %s' % crt)
-        context = OpenSSL.SSL.Context(OpenSSL.SSL.TLSv1_METHOD)
-        context.use_privatekey(private_key_obj)
-        context.use_certificate(cert_obj)
-        try:
+            context = OpenSSL.SSL.Context(OpenSSL.SSL.TLSv1_METHOD)
+            context.use_privatekey(private_key_obj)
+            context.use_certificate(cert_obj)
             context.check_privatekey()
             return True
-        except OpenSSL.SSL.Error:
+        except:
             return False
 
     def get_issuer(self, crt):

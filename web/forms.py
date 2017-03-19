@@ -183,6 +183,7 @@ class InstallForm(SslManager, forms.Form, Logger):
 #            result['errors'] =  'Атата по рукам'
 #            self.logger(self.user.username, 'ALERT! Input domain: %s' % self.cleaned_data['zone'])
         sslip = self.cleaned_data['sslip']
+        password = self.cleaned_data['password']
         service_type = self.cleaned_data['service_type']
         ssql = '''SELECT s.customer_id, s.directory, s.php_version, s.pagespeed_enabled, v.fqdn,
                             v.server, i.ip, cst.dealer, bs.ip as serverip, ss.provider, ss.crt, ss.key
@@ -202,7 +203,12 @@ class InstallForm(SslManager, forms.Form, Logger):
                     print(str(e))
                     result['errors'] = 'Отсутствует %s для установки' % k
                     self.logger(self.user.username, 'There is no %s for %s' % (k, zone))
-            if 'ip' in data and sslip != 'newip':
+                if 'ENCRYPTED' in key and password:
+                    data['key'] = self.delete_passphrase_from_key(data['key'], password)
+                    if data['key'] is None:
+                        result['errors'] = 'Не удалось удалить пароль из ключа'
+                        self.logger(self.user.username, 'delete passphrase from key failed')
+             if 'ip' in data and sslip != 'newip':
                 if sslip == 'serverip':
                     data['ip'] = self.db.load_object('SELECT ip FROM billing.servers WHERE name="%s"' % data['server'])['ip']
                 elif not data['ip'] and sslip == 'currentip':
