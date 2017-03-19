@@ -164,8 +164,8 @@ class InstallForm(SslManager, forms.Form, Logger):
         SslManager.__init__(self)
 
     my_default_errors = {
-        'required': 'обязательно для заполнения',
-        'invalid': 'неверно введено'
+        'required': u'обязательно для заполнения',
+        'invalid': u'неверно введено'
     }
     zone = forms.CharField(error_messages=my_default_errors, label='Домен')
     crt = forms.CharField(error_messages=my_default_errors, required=False, label='Сертификат')
