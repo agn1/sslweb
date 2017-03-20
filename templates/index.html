@@ -255,9 +255,9 @@
             console.log('FAIL');
             console.log(result);
             var json = $.parseJSON(result.responseText);
-            var message = ''
+            var message = []
             for (var key in json) {
-              message = message + ', ' + json[key][0]['message']
+              message.push(json[key][0]['message'])
             }
             notify(formid, message, 'alert', 30000);
           })
