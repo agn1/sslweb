@@ -173,7 +173,7 @@ class InstallForm(SslManager, forms.Form, Logger):
     service_type = forms.CharField(error_messages=my_default_errors, label='Дополнительная услуга')
     root_certs = forms.CharField(error_messages=my_default_errors, required=False)
     sslip = forms.CharField(error_messages=my_default_errors)
-    password = forms.CharField(error_messages=my_default_errors)
+    password = forms.CharField(error_messages=my_default_errors, required=False)
 
     @check_zone
     def installssl(self):
