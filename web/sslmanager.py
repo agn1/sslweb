@@ -121,7 +121,7 @@ class SslManager():
                     service_type, user, ip, '{"fqdn": "%s"}' % zone
                 )
             )
-        adv = self.db.load_object_list('''SELECT count(id) FROM billing.adv_services WHERE customer_id="{user}"
+        adv = self.db.load_object('''SELECT count(id) as count FROM billing.adv_services WHERE customer_id="{user}"
             AND service_type="{service_type}" AND info="{ip}";'''.format(user=user, service_type=service_type, ip=ip))
         if adv['count'] == 0 :
             self.db.set_query('''INSERT INTO billing.adv_services
