@@ -214,7 +214,7 @@ class InstallForm(SslManager, forms.Form, Logger):
                 if sslip == 'serverip':
                     data['ip'] = self.db.load_object('SELECT ip FROM billing.servers WHERE name="%s"' % data['server'])['ip']
                 elif not data['ip'] and sslip == 'currentip':
-                    result['errors'].append(u'Домен не привязан к выделенному адресу в дополнительных услугах')
+                    result['errors'].append('Домен не привязан к выделенному адресу в дополнительных услугах')
                     self.logger(self.user.username, 'No additional ip %s' % zone)
 
         else:

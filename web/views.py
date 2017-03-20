@@ -11,6 +11,7 @@ from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.contrib.auth import logout
 from os import listdir
+import json
 
 
 decorators = [login_required(login_url='/login/')]
@@ -64,7 +65,8 @@ class AjaxableResponseMixin(object):
     def form_valid(self, form):
         response = super(AjaxableResponseMixin, self).form_valid(form)
         if self.request.is_ajax():
-            return JsonResponse(self.jsondata)
+            data = json.dumps(self.jsondata, ensure_ascii=False).encode('utf8')
+            return JsonResponse(data)
         else:
             return response
 
@@ -136,7 +138,7 @@ class InstallView(AjaxableResponseMixin, FormView):
         def form_valid(self, form, *args, **kwargs):
             self.jsondata = form.installssl()
             if 'errors' in self.jsondata:
-                form.add_error(None, [x.encode('utf-8') for x in self.jsondata['errors']])
+                form.add_error(None, jsondata['errors'])
                 return self.form_invalid(form)
             return super(InstallView, self).form_valid(form)
 
