@@ -133,8 +133,10 @@ class InstallView(AjaxableResponseMixin, FormView):
          form.user = self.request.user
          return form
 
-        def form_valid(self, form):
+        def form_valid(self, form, *args, **kwargs):
             self.jsondata = form.installssl()
+            if 'errors' in jsondata:
+                return self.form_invalid(form)
             return super(InstallView, self).form_valid(form)
 
 
