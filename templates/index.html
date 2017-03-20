@@ -249,7 +249,7 @@
             if(formid == 'roots'){
               $('textarea[name="root"]').val(result.crt);
             }
-            notify('Успешно', message, 'success', 5000);
+            notify('Успешно', result.responseText, 'success', 5000);
           })
         .fail(function(result) {
             console.log('FAIL');
