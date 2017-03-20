@@ -58,7 +58,7 @@ class AjaxableResponseMixin(object):
     def form_invalid(self, form):
         response = super(AjaxableResponseMixin, self).form_invalid(form)
         if self.request.is_ajax():
-            return JsonResponse(json.dumps(self.jsondata, ensure_ascii=False).encode('utf8') status=400)
+            return JsonResponse(form.errors, status=400)
         else:
             return response
 
@@ -66,6 +66,7 @@ class AjaxableResponseMixin(object):
         response = super(AjaxableResponseMixin, self).form_valid(form)
         if self.request.is_ajax():
             data = json.dumps(self.jsondata, ensure_ascii=False).encode('utf8')
+            print(data)
             return JsonResponse(data)
         else:
             return response
