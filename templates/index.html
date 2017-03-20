@@ -254,7 +254,10 @@
         .fail(function(result) {
             console.log('FAIL');
             console.log(result);
-            notify(formid, result.responseText, 'alert', 30000);
+            var json = $.parseJSON(result.responseText);
+            for (var key in json) {
+              var message += json[key][0]['message']
+            notify(formid, message, 'alert', 30000);
           })
         .always(function(result){
           $('#'+formid+" button").removeClass(buttonclass).attr('disabled', false);
