@@ -30,6 +30,9 @@ class SslManager():
         self.comodo_file = '/home/sslweb/comodo.crt'
         self.letsencrypt_file = '/home/sslweb/letsencrypt.crt'
         self.crypter = Fernet('VCNu9lxyYQ16OCb2SmgIdF0WESqeJp_8PIg76AlMWDI=')
+        self.ipapiurl = 'http://noc:7508/api/v1.0/NOC/GetFreeIp'
+        self.ipapiuser = 'vapi'
+        self.ipapipass = 'SE2a9e3eHuWen0pO'
 
     def is_ascii(self, s):
         return all(ord(c) < 128 for c in s)
@@ -69,9 +72,8 @@ class SslManager():
         data = {"target": target, "location":"4", "ipv4":"true"}
         kwargs = {'data': json.dumps(data),
                   'headers': {'content-type': 'application/json'},
-                  'auth': ('vapi', 'SE2a9e3eHuWen0pO')}
-        url = 'http://noc:7508/api/v1.0/NOC/GetFreeIp'
-        _response = requests.get(url, **kwargs)
+                  'auth': (self.ipapiuser, self.ipapipass)}
+        _response = requests.get(self.ipapiurl, **kwargs)
         if _response.status_code == 200:
             jr = _response.json()
             if 'data' in jr:

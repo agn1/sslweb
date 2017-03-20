@@ -16,6 +16,30 @@ import json
 
 decorators = [login_required(login_url='/login/')]
 
+
+class AjaxableResponseMixin(object):
+    """
+    Mixin to add AJAX support to a form.
+    Must be used with an object-based FormView (e.g. CreateView)
+    """
+    def form_invalid(self, form):
+        response = super(AjaxableResponseMixin, self).form_invalid(form)
+        if self.request.is_ajax():
+            jsondata = json.dumps(form.errors_as_json(), ensure_ascii=False).encode('utf8')
+            return JsonResponse(jsondata, status=400)
+        else:
+            return response
+
+    def form_valid(self, form):
+        response = super(AjaxableResponseMixin, self).form_valid(form)
+        if self.request.is_ajax():
+            data = json.dumps(self.jsondata, ensure_ascii=False).encode('utf8')
+            print(data)
+            return JsonResponse(data)
+        else:
+            return response
+
+
 @method_decorator(decorators, name='dispatch')
 class LogoutView(RedirectView):
     url = '/login/'
@@ -48,28 +72,6 @@ class LoginView(FormView):
     def form_valid(self, form):
         user = form.authenticate(self.request)
         return super(LoginView, self).form_valid(form)
-
-
-class AjaxableResponseMixin(object):
-    """
-    Mixin to add AJAX support to a form.
-    Must be used with an object-based FormView (e.g. CreateView)
-    """
-    def form_invalid(self, form):
-        response = super(AjaxableResponseMixin, self).form_invalid(form)
-        if self.request.is_ajax():
-            return JsonResponse(json.dumps(self.jsondata, ensure_ascii=False).encode('utf8'), status=400)
-        else:
-            return response
-
-    def form_valid(self, form):
-        response = super(AjaxableResponseMixin, self).form_valid(form)
-        if self.request.is_ajax():
-            data = json.dumps(self.jsondata, ensure_ascii=False).encode('utf8')
-            print(data)
-            return JsonResponse(data)
-        else:
-            return response
 
 
 @method_decorator(decorators, name='dispatch')
