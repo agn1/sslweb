@@ -135,7 +135,7 @@ class InstallView(AjaxableResponseMixin, FormView):
 
         def form_valid(self, form, *args, **kwargs):
             self.jsondata = form.installssl()
-            if 'errors' in jsondata:
+            if 'errors' in self.jsondata:
                 return self.form_invalid(form)
             return super(InstallView, self).form_valid(form)
 
