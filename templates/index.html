@@ -256,7 +256,7 @@
             console.log(result);
             var json = $.parseJSON(result.responseText);
             for (var key in json) {
-              var message += json[key][0]['message']
+              var message = message + ', ' + json[key][0]['message']
             notify(formid, message, 'alert', 30000);
           })
         .always(function(result){
