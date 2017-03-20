@@ -259,7 +259,7 @@
             for (var key in json) {
               message.push(json[key][0]['message'])
             }
-            notify(formid, message, 'alert', 30000);
+            notify('Ошибка', message, 'alert', 30000);
           })
         .always(function(result){
           $('#'+formid+" button").removeClass(buttonclass).attr('disabled', false);
