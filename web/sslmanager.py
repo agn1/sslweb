@@ -114,15 +114,16 @@ class SslManager():
                         SET info='{0}' WHERE id='{1}';'''.format(ip, i['id'])
                     )
                     break
-                else:
-                    self.db.set_query('''INSERT INTO billing.adv_services
-                        (service_type, customer_id, add_date, end_date, info, service_comment, service_status, requested_data, vds_id, pay_for)
-                        VALUES ('{0}', '{1}', CURRENT_TIMESTAMP, NOW() + INTERVAL 1 YEAR, '{2}', '','new', '{3}','0','y');'''.format(
-                            service_type, user, ip, '{"fqdn": "%s"}' % zone
-                        )
-                    )
-                    break
         else:
+            self.db.set_query('''INSERT INTO billing.adv_services
+                (service_type, customer_id, add_date, end_date, info, service_comment, service_status, requested_data, vds_id, pay_for)
+                VALUES ('{0}', '{1}', CURRENT_TIMESTAMP, NOW() + INTERVAL 1 YEAR, '{2}', '','new', '{3}','0','y');'''.format(
+                    service_type, user, ip, '{"fqdn": "%s"}' % zone
+                )
+            )
+        adv = self.db.load_object_list('''SELECT id, info, requested_data FROM billing.adv_services WHERE customer_id="{user}"
+            AND service_type="{service_type}";'''.format(user=user, service_type=service_type))
+        if not adv:
             self.db.set_query('''INSERT INTO billing.adv_services
                 (service_type, customer_id, add_date, end_date, info, service_comment, service_status, requested_data, vds_id, pay_for)
                 VALUES ('{0}', '{1}', CURRENT_TIMESTAMP, NOW() + INTERVAL 1 YEAR, '{2}', '','new', '{3}','0','y');'''.format(
