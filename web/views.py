@@ -33,9 +33,7 @@ class AjaxableResponseMixin(object):
     def form_valid(self, form):
         response = super(AjaxableResponseMixin, self).form_valid(form)
         if self.request.is_ajax():
-            data = json.dumps(self.jsondata, ensure_ascii=False).encode('utf8')
-            print(data)
-            return JsonResponse(data)
+            return JsonResponse(self.jsondata)
         else:
             return response
 
