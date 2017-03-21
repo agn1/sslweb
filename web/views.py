@@ -55,8 +55,6 @@ class IndexView(TemplateView):
         return listdir('rootca')
 
 
-
-
 class LoginView(FormView):
     form_class = LoginForm
     template_name = 'login.html'
@@ -138,7 +136,7 @@ class InstallView(AjaxableResponseMixin, FormView):
 
         def form_valid(self, form, *args, **kwargs):
             self.jsondata = form.installssl()
-            if 'errors' in self.jsondata:
+            if self.jsondata['erros']>0:
                 form.add_error(None, self.jsondata['errors'])
                 return self.form_invalid(form)
             return super(InstallView, self).form_valid(form)
