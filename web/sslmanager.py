@@ -33,6 +33,7 @@ class SslManager():
         self.ipapiurl = 'http://noc:7508/api/v1.0/NOC/GetFreeIp'
         self.ipapiuser = 'vapi'
         self.ipapipass = 'SE2a9e3eHuWen0pO'
+        self.result = {'responseText': 'Ok', 'errors': []}
 
     def is_ascii(self, s):
         return all(ord(c) < 128 for c in s)

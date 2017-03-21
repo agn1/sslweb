@@ -84,8 +84,10 @@ class GenerateCsrView(AjaxableResponseMixin, FormView):
     def form_valid(self, form):
         # This method is called when valid form data has been POSTed.
         # It should return an HttpResponse.
-        self.jsondata = {}
-        self.jsondata['csr'] = str(form.gencsr()['csr'])
+        self.jsondata = form.gencsr()
+        if len(self.jsondata['errors'])>0:
+            form.add_error(None, self.jsondata['errors'])
+            return self.form_invalid(form)
         return super(GenerateCsrView, self).form_valid(form)
 
 
@@ -102,8 +104,9 @@ class ShowView(AjaxableResponseMixin, FormView):
 
     def form_valid(self, form):
         self.jsondata = form.showssl()
-        for key in self.jsondata:
-            self.jsondata[key] =  str(self.jsondata[key])
+        if len(self.jsondata['errors'])>0:
+            form.add_error(None, self.jsondata['errors'])
+            return self.form_invalid(form)
         return super(ShowView, self).form_valid(form)
 
 
@@ -120,7 +123,9 @@ class DeleteView(AjaxableResponseMixin, FormView):
 
         def form_valid(self, form):
             self.jsondata = form.deletessl()
-            
+            if len(self.jsondata['errors'])>0:
+                form.add_error(None, self.jsondata['errors'])
+                return self.form_invalid(form)
             return super(DeleteView, self).form_valid(form)
 
 
@@ -156,4 +161,7 @@ class RootsView(AjaxableResponseMixin, FormView):
 
         def form_valid(self, form):
             self.jsondata = form.showroots()
+            if len(self.jsondata['errors'])>0:
+                form.add_error(None, self.jsondata['errors'])
+                return self.form_invalid(form)
             return super(RootsView, self).form_valid(form)

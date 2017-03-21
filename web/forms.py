@@ -56,18 +56,21 @@ class GenerateForm(SslManager, forms.Form, Logger):
         for i in csrdata:
             if i == '' or not self.is_ascii(i):
                 csrdata.remove(i)
-        csr = self.generatecsr(**csrdata)
-        data = {
-            'csr': self.crypter.encrypt(bytes(csr['csr'])),
-            'key': self.crypter.encrypt(bytes(csr['key'])),
-            'full_fqdn':  csrdata['commonname'].split()[0],
-            'crt': '',
-            }
-        sql = '''INSERT INTO system.ssl_storage (dt, full_fqdn, `key`, csr, crt, provider, source)
-            VALUES (CURRENT_TIMESTAMP, '{full_fqdn}', '{key}', '{csr}', '{crt}', 'pdr', 'manual');'''.format(**data)
-        self.db.set_query(sql)
-        csr['responseText'] = 'Ok'
-        return csr
+        try:
+            csr = self.generatecsr(**csrdata)
+            data = {
+                'csr': self.crypter.encrypt(bytes(csr['csr'])),
+                'key': self.crypter.encrypt(bytes(csr['key'])),
+                'full_fqdn':  csrdata['commonname'].split()[0],
+                'crt': '',
+                }
+            sql = '''INSERT INTO system.ssl_storage (dt, full_fqdn, `key`, csr, crt, provider, source)
+                VALUES (CURRENT_TIMESTAMP, '{full_fqdn}', '{key}', '{csr}', '{crt}', 'pdr', 'manual');'''.format(**data)
+            self.db.set_query(sql)
+            self.result['csr'] = csr['csr']
+        except:
+            self.result['errors'].append('Не удалось сгенерировать CSR')
+        return self.result
 
 
 class RootsForm(forms.Form, SslManager, Logger):
@@ -107,7 +110,7 @@ class ShowForm(forms.Form, SslManager, Logger):
             for key in encrypted:
                 if len(encrypted[key]) > 0:
                     try:
-                        data[key] = self.crypter.decrypt(bytes(encrypted[key]))
+                        data[key] = str(self.crypter.decrypt(bytes(encrypted[key])))
                     except:
                         self.logger(self.user.username, 'error: decrypt %s of %s failed' % (key, zone))
                         data[key] = 'Broken'
@@ -137,7 +140,6 @@ class DeleteForm(SslManager, forms.Form, Logger):
     def deletessl(self):
         zone = self.cleaned_data['zone'].encode('idna')
         self.logger(self.user.username, 'Delete SSL %s' % zone)
-        result = {'responseText': 'Ok'}
         sql_data = self.db.load_object('''SELECT customer_id, server
             FROM billing.vhosts WHERE idn_name="{0}" LIMIT 1;'''.format(self.cleaned_data['zone']))
         if sql_data:
@@ -149,13 +151,13 @@ class DeleteForm(SslManager, forms.Form, Logger):
             try:
                 self.soap_delete_zone(sql_data['server'], zone)
             except Exception as e:
-                result['errors'].append('Ошибка удаления сертификата. SOAP failed')
+                self.result['errors'].append('Ошибка удаления сертификата. SOAP failed')
                 self.logger(self.user.username, str(e))
                 self.logger(self.user.username, 'Delete soap failed for %s' % zone)
         else:
             self.logger(self.user.username, 'Domain %s is not exist in database' % zone)
-            result['errors'].append('Домен не существует')
-        return result
+            self.result['errors'].append('Домен не существует')
+        return self.result
 
 
 class InstallForm(SslManager, forms.Form, Logger):
@@ -178,12 +180,8 @@ class InstallForm(SslManager, forms.Form, Logger):
 
     @check_zone
     def installssl(self):
-        result = {'responseText': 'Ok', 'errors': []}
         zone  = self.cleaned_data['zone'].encode('idna')
         zone = zone if zone[:4] != 'www.' else zone[4:]
-#        if 'timeweb' in zone:
-#            result['errors'].append( 'Атата по рукам'
-#            self.logger(self.user.username, 'ALERT! Input domain: %s' % self.cleaned_data['zone'])
         sslip = self.cleaned_data['sslip']
         password = self.cleaned_data['password']
         service_type = self.cleaned_data['service_type']
@@ -203,24 +201,24 @@ class InstallForm(SslManager, forms.Form, Logger):
                     data[k] = ''.join(i for i in self.cleaned_data[k] if ord(i)<128) if len(self.cleaned_data[k])>0 else self.crypter.decrypt(bytes(data[k]))
                 except Exception as e:
                     print(str(e))
-                    result['errors'].append('Отсутствует %s для установки' % k)
+                    self.result['errors'].append('Отсутствует %s для установки' % k)
                     self.logger(self.user.username, 'There is no %s for %s' % (k, zone))
             if 'ENCRYPTED' in data['key'] and password:
                 data['key'] = self.delete_passphrase_from_key(data['key'], password)
                 if data['key'] is None:
-                    result['errors'].append('Не удалось удалить пароль из ключа')
+                    self.result['errors'].append('Не удалось удалить пароль из ключа')
                     self.logger(self.user.username, 'delete passphrase from key failed')
             if 'ip' in data and sslip != 'newip':
                 if sslip == 'serverip':
                     data['ip'] = self.db.load_object('SELECT ip FROM billing.servers WHERE name="%s"' % data['server'])['ip']
                 elif not data['ip'] and sslip == 'currentip':
-                    result['errors'].append('Домен не привязан к выделенному адресу в дополнительных услугах')
+                    self.result['errors'].append('Домен не привязан к выделенному адресу в дополнительных услугах')
                     self.logger(self.user.username, 'No additional ip %s' % zone)
 
         else:
-            result['errors'].append('Домен не привязан к сайту')
+            self.result['errors'].append('Домен не привязан к сайту')
             self.logger(self.user.username, 'Thereis no data for %s' % zone)
-        if not result['errors']:
+        if not self.result['errors']:
             if self.check_idn_name(zone):
                 if self.check_associate_cert_with_private_key(data['crt'], data['key']):
                     self.logger(self.user.username, 'domain: %s , newip: %s , service_type: %s, start install ssl' % (zone, sslip, service_type))
@@ -233,11 +231,11 @@ class InstallForm(SslManager, forms.Form, Logger):
                             self.soap_add_ip(data['ip'], data['server'], data['customer_id'])
                             self.update_a_dns(zone, data['ip'])
                             self.update_ip_id(zone, data['ip'])
-                            result['responseText'] = 'Ok'
+                            self.result['responseText'] = data['ip']
                         else:
-                            result['errors'].append('Не удалось выделить новый ip адрес')
+                            self.result['errors'].append('Не удалось выделить новый ip адрес')
                             self.logger(self.user.username, 'No new ip, domain: %s' % zone)
-                    if not result['errors']:
+                    if not self.result['errors']:
                         self.update_adv_services(zone, data['ip'], data['customer_id'], service_type)
                         self.update_ssl_storage(zone, self.crypter.encrypt(bytes(data['key'])), self.crypter.encrypt(bytes(data['crt'])))
                         if data['crt'].count('BEGIN CERTIFICATE') == 1:
@@ -245,9 +243,9 @@ class InstallForm(SslManager, forms.Form, Logger):
                         self.logger(self.user.username, 'domain : %s , ip : %s , server : %s , send soap install ssl' % (zone, data['ip'], data['server']))
                         self.soap_install_sll(data['server'], zone, data['directory'], data['ip'], data['crt'], data['key'], data['php_version'])
                 else:
-                    result['errors'].append('Ошибка соответствия сертификата и ключа')
+                    self.result['errors'].append('Ошибка соответствия сертификата и ключа')
                     self.logger(self.user.username, 'Check associate key and crt failed. %s' % zone)
             else:
-                result['errors'].append('Поле idn.name не соответствует %s' %zone)
+                self.result['errors'].append('Поле idn.name не соответствует %s' %zone)
                 self.logger(self.user.username, 'IDN check failed. %s' % zone)
-        return result
+        return self.result
