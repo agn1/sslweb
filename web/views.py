@@ -120,6 +120,7 @@ class DeleteView(AjaxableResponseMixin, FormView):
 
         def form_valid(self, form):
             self.jsondata = form.deletessl()
+            
             return super(DeleteView, self).form_valid(form)
 
 
