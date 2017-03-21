@@ -83,18 +83,11 @@
             <span class="caption">Установить на Ip адрес сервера</span>
         </label>
         </br>
-        <select name="service_type" data-validate-func="required">
-                    <option value="" selected="">Выберите доп услугу</option>
-                    <option value="11">Positive SSL Comodo</option>
-                    <option value="3">Платный IP</option>
-                    <option value="85">Let's Encrypt</option>
-                    <option value="59">Wildcard Comodo</option>
-        </select>
         <h4>Выберите дополнительную услугу</h4>
         <label class="input-control radio">
             <input type="radio" name="service_type" value="11">
             <span class="check"></span>
-            <span class="caption">Positive SSL Comodo</span>
+            <span class="caption">SSL cертификат Comodo</span>
         </label>
         <label class="input-control radio">
             <input type="radio" name="service_type" value="3">
@@ -114,7 +107,7 @@
         </br>
         <h4>Пароль от ключа:</h4>
         <div style="width:300px" class="input-control text">
-          <input name="password" placeholder="Необязательно"  type="text">
+          <input name="password"  type="text">
         </div>
           <h4>Укажите сертификат и ключ к нему(если есть):</h4>
           <div style="width:600px;height:400px"  class="input-control textarea" data-role="input" data-text-auto-resize="false">
@@ -251,7 +244,6 @@
             if(formid == 'show'){
               $('textarea[name="showcrt"]').val(result.crt);
               $('textarea[name="showkey"]').val(result.key);
-              $('input[name="issuer"]').val(result.issuer);
             }
             if(formid == 'roots'){
               $('textarea[name="root"]').val(result.crt);
