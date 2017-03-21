@@ -232,8 +232,8 @@ class SslManager():
                 elif csr['locality']=="N\\A":
                     csr['locality']="N\\\\A"
 
-            if word.startswith("Country"):
-                country = re.sub('^Country','', word).lstrip().rstrip()
+            if word.startswith("3"):
+                csr['country'] = re.sub('^Country','', word).lstrip().rstrip()
         short2long = {"RU":"Russia",
             "UA":"Ukraine",
             "AE":"United Arab Emirates",
@@ -263,7 +263,7 @@ class SslManager():
             "LV":"Latvia",
         }
         for key in short2long.keys():
-            if short2long[key]==country:
+            if short2long[key]==csr['country']:
                 csr['country'] = key
         return csr
 
