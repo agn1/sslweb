@@ -11,9 +11,32 @@ from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.contrib.auth import logout
 from os import listdir
+import json
 
 
 decorators = [login_required(login_url='/login/')]
+
+
+class AjaxableResponseMixin(object):
+    """
+    Mixin to add AJAX support to a form.
+    Must be used with an object-based FormView (e.g. CreateView)
+    """
+    def form_invalid(self, form):
+        response = super(AjaxableResponseMixin, self).form_invalid(form)
+        if self.request.is_ajax():
+            jsondata = json.loads(form.errors.as_json())
+            return JsonResponse(jsondata, status=400)
+        else:
+            return response
+
+    def form_valid(self, form):
+        response = super(AjaxableResponseMixin, self).form_valid(form)
+        if self.request.is_ajax():
+            return JsonResponse(self.jsondata)
+        else:
+            return response
+
 
 @method_decorator(decorators, name='dispatch')
 class LogoutView(RedirectView):
@@ -47,26 +70,6 @@ class LoginView(FormView):
     def form_valid(self, form):
         user = form.authenticate(self.request)
         return super(LoginView, self).form_valid(form)
-
-
-class AjaxableResponseMixin(object):
-    """
-    Mixin to add AJAX support to a form.
-    Must be used with an object-based FormView (e.g. CreateView)
-    """
-    def form_invalid(self, form):
-        response = super(AjaxableResponseMixin, self).form_invalid(form)
-        if self.request.is_ajax():
-            return JsonResponse(form.errors, status=400)
-        else:
-            return response
-
-    def form_valid(self, form):
-        response = super(AjaxableResponseMixin, self).form_valid(form)
-        if self.request.is_ajax():
-            return JsonResponse(self.jsondata)
-        else:
-            return response
 
 
 @method_decorator(decorators, name='dispatch')
@@ -133,8 +136,11 @@ class InstallView(AjaxableResponseMixin, FormView):
          form.user = self.request.user
          return form
 
-        def form_valid(self, form):
+        def form_valid(self, form, *args, **kwargs):
             self.jsondata = form.installssl()
+            if 'errors' in self.jsondata:
+                form.add_error(None, self.jsondata['errors'])
+                return self.form_invalid(form)
             return super(InstallView, self).form_valid(form)
 
 

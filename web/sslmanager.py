@@ -30,26 +30,34 @@ class SslManager():
         self.comodo_file = '/home/sslweb/comodo.crt'
         self.letsencrypt_file = '/home/sslweb/letsencrypt.crt'
         self.crypter = Fernet('VCNu9lxyYQ16OCb2SmgIdF0WESqeJp_8PIg76AlMWDI=')
+        self.ipapiurl = 'http://noc:7508/api/v1.0/NOC/GetFreeIp'
+        self.ipapiuser = 'vapi'
+        self.ipapipass = 'SE2a9e3eHuWen0pO'
 
     def is_ascii(self, s):
         return all(ord(c) < 128 for c in s)
 
+    def delete_passphrase_from_key(self, key, password):
+        try:
+            crypted = OpenSSL.crypto.load_privatekey(
+                OpenSSL.crypto.FILETYPE_PEM, key, str(password)
+                )
+            return OpenSSL.crypto.dump_privatekey(
+                OpenSSL.crypto.FILETYPE_PEM, crypted
+                )
+        except:
+            return None
+
     def check_associate_cert_with_private_key(self, crt , key):
         try:
             private_key_obj = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, key)
-        except OpenSSL.crypto.Error:
-            raise Exception('private key is not correct: %s' % private_key)
-        try:
             cert_obj = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, crt)
-        except OpenSSL.crypto.Error:
-            raise Exception('certificate is not correct: %s' % crt)
-        context = OpenSSL.SSL.Context(OpenSSL.SSL.TLSv1_METHOD)
-        context.use_privatekey(private_key_obj)
-        context.use_certificate(cert_obj)
-        try:
+            context = OpenSSL.SSL.Context(OpenSSL.SSL.TLSv1_METHOD)
+            context.use_privatekey(private_key_obj)
+            context.use_certificate(cert_obj)
             context.check_privatekey()
             return True
-        except OpenSSL.SSL.Error:
+        except:
             return False
 
     def get_issuer(self, crt):
@@ -64,9 +72,8 @@ class SslManager():
         data = {"target": target, "location":"4", "ipv4":"true"}
         kwargs = {'data': json.dumps(data),
                   'headers': {'content-type': 'application/json'},
-                  'auth': ('vapi', 'SE2a9e3eHuWen0pO')}
-        url = 'http://noc:7508/api/v1.0/NOC/GetFreeIp'
-        _response = requests.get(url, **kwargs)
+                  'auth': (self.ipapiuser, self.ipapipass)}
+        _response = requests.get(self.ipapiurl, **kwargs)
         if _response.status_code == 200:
             jr = _response.json()
             if 'data' in jr:
@@ -109,15 +116,16 @@ class SslManager():
                         SET info='{0}' WHERE id='{1}';'''.format(ip, i['id'])
                     )
                     break
-                else:
-                    self.db.set_query('''INSERT INTO billing.adv_services
-                        (service_type, customer_id, add_date, end_date, info, service_comment, service_status, requested_data, vds_id, pay_for)
-                        VALUES ('{0}', '{1}', CURRENT_TIMESTAMP, NOW() + INTERVAL 1 YEAR, '{2}', '','new', '{3}','0','y');'''.format(
-                            service_type, user, ip, '{"fqdn": "%s"}' % zone
-                        )
-                    )
-                    break
         else:
+            self.db.set_query('''INSERT INTO billing.adv_services
+                (service_type, customer_id, add_date, end_date, info, service_comment, service_status, requested_data, vds_id, pay_for)
+                VALUES ('{0}', '{1}', CURRENT_TIMESTAMP, NOW() + INTERVAL 1 YEAR, '{2}', '','new', '{3}','0','y');'''.format(
+                    service_type, user, ip, '{"fqdn": "%s"}' % zone
+                )
+            )
+        adv = self.db.load_object('''SELECT count(id) as count FROM billing.adv_services WHERE customer_id="{user}"
+            AND service_type="{service_type}" AND info="{ip}";'''.format(user=user, service_type=service_type, ip=ip))
+        if adv['count'] == 0 :
             self.db.set_query('''INSERT INTO billing.adv_services
                 (service_type, customer_id, add_date, end_date, info, service_comment, service_status, requested_data, vds_id, pay_for)
                 VALUES ('{0}', '{1}', CURRENT_TIMESTAMP, NOW() + INTERVAL 1 YEAR, '{2}', '','new', '{3}','0','y');'''.format(
