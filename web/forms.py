@@ -102,7 +102,6 @@ class ShowForm(forms.Form, SslManager, Logger):
 
     def showssl(self):
         zone  = self.cleaned_data['zone'].encode('idna')
-        data = {'responseText': 'Ok'}
         self.logger(self.user.username, 'show SSL %s' % zone)
         sql = '''SELECT crt, `key` FROM system.ssl_storage WHERE full_fqdn = "{0}" ORDER BY dt DESC LIMIT 1;'''.format(zone)
         encrypted = self.db.load_object(sql)
@@ -110,18 +109,18 @@ class ShowForm(forms.Form, SslManager, Logger):
             for key in encrypted:
                 if len(encrypted[key]) > 0:
                     try:
-                        data[key] = str(self.crypter.decrypt(bytes(encrypted[key])))
+                        self.result[key] = str(self.crypter.decrypt(bytes(encrypted[key])))
                     except:
                         self.logger(self.user.username, 'error: decrypt %s of %s failed' % (key, zone))
-                        data[key] = 'Broken'
+                        self.result[key] = 'Broken'
                 else:
-                    data[key] = 'Empty'
-            if 'crt' in data:
-                if data['crt'] != 'Empty':
-                    data['issuer'] = self.get_issuer(data['crt'])
+                    self.result[key] = 'Empty'
+            if 'crt' in self.result:
+                if self.result['crt'] != 'Empty':
+                    self.result['issuer'] = self.get_issuer(self.result['crt'])
         else:
-            data['errors'] = 'Domain not exist'
-        return data
+            self.result['errors'] = 'Domain not exist'
+        return self.result
 
 
 class DeleteForm(SslManager, forms.Form, Logger):
