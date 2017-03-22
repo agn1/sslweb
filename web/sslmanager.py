@@ -232,7 +232,7 @@ class SslManager():
                 elif csr['locality']=="N\\A":
                     csr['locality']="N\\\\A"
 
-            if word.startswith("3"):
+            if word.startswith("Country"):
                 csr['country'] = re.sub('^Country','', word).lstrip().rstrip()
         short2long = {"RU":"Russia",
             "UA":"Ukraine",
