@@ -121,7 +121,7 @@ class ShowForm(forms.Form, SslManager, Logger):
                 if self.result['crt'] != 'Empty':
                     self.result['issuer'] = self.get_issuer(self.result['crt'])
         else:
-            self.result['errors'] = 'Domain not exist'
+            self.result['errors'] = 'Домен не существует'
         return self.result
 
 
