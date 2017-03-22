@@ -5,6 +5,7 @@ from sslmanager import SslManager, check_zone
 from django.contrib.auth import authenticate, login
 import time
 
+
 class Logger():
 
     def logger(self, user, msg, debug=False):
@@ -88,6 +89,7 @@ class RootsForm(forms.Form, SslManager, Logger):
         with open('rootca/'+self.cleaned_data['roots']) as f:
             roots = ''.join(f.readlines())
         return {'crt': roots, 'responseText': 'Ok'}
+
 
 class ShowForm(forms.Form, SslManager, Logger):
     def __init__(self, *args, **kwargs):
