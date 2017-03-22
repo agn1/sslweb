@@ -63,7 +63,7 @@
           {% csrf_token %}
           <h4>Укажите домен</h4>
           <div style="width:300px" class="input-control text">
-            <input name="zone"  data-validate-func="required" type="text">
+            <input name="zone" placeholder="Пример: domain.com" data-validate-func="required" type="text">
           </div>
           <button type="submit" class="button  bg-darkCobalt bg-active-darkPink fg-white">Установить</button>
         <h4>ip адрес:</h4>
@@ -134,7 +134,7 @@
           {% csrf_token %}
           <h4>Укажите домен</h4>
           <div style="width:300px" class="input-control text">
-            <input data-validate-func="required" name="zone" type="text">
+            <input placeholder="Пример: domain.com" data-validate-func="required" name="zone" type="text">
           </div>
           <button type="submit" class="button bg-darkCobalt bg-active-darkPink fg-white">Показать</button>
           <h4>Данные SSL из бд:</h4>
@@ -172,7 +172,7 @@
           {% csrf_token %}
           <h4>Укажите домен</h4>
           <div style="width:300px" class="input-control text">
-            <input type="text" data-validate-func="required" name="zone">
+            <input placeholder="Пример: domain.com" type="text" data-validate-func="required" name="zone">
           </div>
           <button type="submit" class="button bg-darkCobalt bg-active-darkPink fg-white">Удалить</button>
         <h5>Дополнително:</h5>
