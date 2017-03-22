@@ -262,9 +262,10 @@ class SslManager():
             "AT":"Austria",
             "LV":"Latvia",
         }
-        for key in short2long.keys():
-            if short2long[key]==csr['country']:
-                csr['country'] = key
+        if 'country' in csr:
+            for key in short2long.keys():
+                if short2long[key]==csr['country']:
+                    csr['country'] = key
         return csr
 
     def generatecsr(self, **kwargs):
@@ -288,25 +289,28 @@ class SslManager():
             {'key': str, 'csr': str).  Dictioanry containing private key and certificate
             signing request (PEM).
         """
-        key = OpenSSL.crypto.PKey()
-        key.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
+        try:
+            key = OpenSSL.crypto.PKey()
+            key.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
 
-        req = OpenSSL.crypto.X509Req()
-        req.get_subject().CN = kwargs['commonname']
-        req.get_subject().C = kwargs['country']
-        req.get_subject().ST = kwargs['state']
-        req.get_subject().L = kwargs['locality']
-        req.get_subject().O = kwargs['organization']
-        req.get_subject().OU = kwargs['organizationalunit']
-        req.get_subject().emailAddress = kwargs['emailAddress']
+            req = OpenSSL.crypto.X509Req()
+            req.get_subject().CN = kwargs['commonname']
+            req.get_subject().C = kwargs['country']
+            req.get_subject().ST = kwargs['state']
+            req.get_subject().L = kwargs['locality']
+            req.get_subject().O = kwargs['organization']
+            req.get_subject().OU = kwargs['organizationalunit']
+            req.get_subject().emailAddress = kwargs['emailAddress']
 
-        req.set_pubkey(key)
-        req.sign(key, 'sha256')
+            req.set_pubkey(key)
+            req.sign(key, 'sha256')
 
-        private_key = OpenSSL.crypto.dump_privatekey(
-            OpenSSL.crypto.FILETYPE_PEM, key)
+            private_key = OpenSSL.crypto.dump_privatekey(
+                OpenSSL.crypto.FILETYPE_PEM, key)
 
-        csr = OpenSSL.crypto.dump_certificate_request(
-                   OpenSSL.crypto.FILETYPE_PEM, req)
-
-        return {'key': private_key, 'csr': csr}
+            csr = OpenSSL.crypto.dump_certificate_request(
+                       OpenSSL.crypto.FILETYPE_PEM, req)
+            data = {'key': private_key, 'csr': csr}
+        except:
+            data = None
+        return data
