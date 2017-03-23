@@ -64,9 +64,9 @@ class SslManager():
     def get_issuer(self, crt):
         try:
             cert_obj = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, crt)
+            return cert_obj.get_issuer()
         except:
-            raise Exception('certificate is not correct: %s' % crt)
-        return cert_obj.get_issuer()
+            return None
 
     def get_free_ip(self, target):
         result = None
