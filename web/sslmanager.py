@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-import re
-import OpenSSL
-from cryptography.fernet import Fernet
-import sys
-sys.path.append('/usr/lib/python2.7/dist-packages')
 from twtools import dbw
 from twtools import soap
 from subprocess import Popen, PIPE
 import requests
 import json
 from os import listdir
+import re
+import OpenSSL
+from cryptography.fernet import Fernet
+import sys
+sys.path.append('/usr/lib/python2.7/dist-packages')
 
 
 def check_zone(function):
@@ -169,9 +169,65 @@ class SslManager():
         s = soap.SOAPClient(server, 'Ip')
         s.AddIp(ip, user)
 
+    def soap_create_nginx_zone(self, **kwargs)
+        s =  soap.SOAPClient(server, 'Ip')
+
     def soap_delete_zone(self, server, zone):
         s = soap.SOAPClient(server, 'SSL')
         s.RemoveSSL(zone)
+
+    def parse_csr(self, csrtext):
+        csr = {}
+        for line in csrtext.split('\n'):
+            array = line.split()
+            if len(line.split()) > 0:
+                if line.split()[0].lower() == 'domain':
+                    csr['commonname'] = array[1]
+                elif line.split()[0].lower() == 'name':
+                    csr['organizationalunit'] = ' '.join(array[1:])
+                elif line.split()[0].lower() == 'username':
+                    csr['emailAddress'] = array[-1]
+                elif line.split()[0].lower() == 'company':
+                    csr['organization'] = ' '.join(array[1:])
+                elif line.split()[0].lower() == 'state/region/province':
+                    csr['state'] = ' '.join(array[1:])
+                elif line.split()[0].lower() == 'city':
+                    csr['locality'] = ' '.join(array[1:])
+                elif line.split()[0].lower() == 'country':
+                    csr['country'] = ' '.join(array[1:])
+        short2long = {"RU":"Russia",
+            "UA":"Ukraine",
+            "AE":"United Arab Emirates",
+            "GB":"United Kingdom",
+            "US":"United States",
+            "AR":"Argentina",
+            "AZ":"Azerbaijan",
+            "AM":"Armenia",
+            "BY":"Belarus",
+            "BR":"Brazil",
+            "BG":"Bulgaria",
+            "CA":"Canada",
+            "CY":"Cyprus",
+            "CZ":"Czech Republic",
+            "DK":"Denmark",
+            "FI":"Finland",
+            "FR":"France",
+            "GR":"Greece",
+            "GE":"Georgia",
+            "DE":"Germany",
+            "IL":"Israel",
+            "IT":"Italy",
+            "PK":"Pakistan",
+            "UZ":"Uzbekistan",
+            "BE":"Belgium",
+            "AT":"Austria",
+            "LV":"Latvia",
+        }
+        if 'country' in csr:
+            for key in short2long.keys():
+                if short2long[key]==csr['country']:
+                    csr['country'] = key
+        return csr
 
     def parsecsr(self, csrtext):
         csr = {}
