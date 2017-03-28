@@ -169,7 +169,7 @@ class SslManager():
         s = soap.SOAPClient(server, 'Ip')
         s.AddIp(ip, user)
 
-    def soap_create_nginx_zone(self, **kwargs)
+    def soap_create_nginx_zone(self, **kwargs):
         s =  soap.SOAPClient(server, 'Ip')
 
     def soap_delete_zone(self, server, zone):
