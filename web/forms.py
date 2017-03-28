@@ -53,7 +53,7 @@ class GenerateForm(SslManager, forms.Form, Logger):
 
     def gencsr(self):
         self.logger(self.user.username, 'generate CSR')
-        csrdata = self.parsecsr(self.cleaned_data['csrtext'])
+        csrdata = self.parse_csr(self.cleaned_data['csrtext'])
         for i in csrdata:
             if i == '' or not self.is_ascii(i):
                 csrdata.remove(i)
