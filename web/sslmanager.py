@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from twtools import dbw
-from twtools import soap
 from subprocess import Popen, PIPE
 import requests
 import json
@@ -10,6 +8,8 @@ import OpenSSL
 from cryptography.fernet import Fernet
 import sys
 sys.path.append('/usr/lib/python2.7/dist-packages')
+from twtools import dbw
+from twtools import soap
 
 
 def check_zone(function):
