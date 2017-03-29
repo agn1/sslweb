@@ -246,7 +246,7 @@ class InstallForm(SslManager, forms.Form, Logger):
                             self.result['responseText'] = data['ip']
                             sql = 'SELECT v.blocked, v.ddos, s.'
                             self.soap_create_nginx_zone(
-                                data['server'], zone, data['directory'], server_ip, data['ip'], "",
+                                data['server'], zone, data['directory'], server_ip, data['ip'],
                                 data['ipv6'], data['ddos'], data['blocked'], data['php_version'], redirect, pagespeed_json
                             )
                         else:
