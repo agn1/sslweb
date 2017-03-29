@@ -222,11 +222,11 @@ class InstallForm(SslManager, forms.Form, Logger):
             self.result['errors'].append('Домен не привязан к сайту')
             self.logger(self.user.username, 'Thereis no data for %s' % zone)
         pagespeed_json = ""
-            if data["pagespeed_options"] != "":
-                pagespeed = {}
-                pagespeed["pagespeed"] = "on" if s["pagespeed_enabled"] == 1 else "off"
-                pagespeed["EnableFilters"] = json.loads(s["pagespeed_options"])
-                pagespeed_json = json.dumps(pagespeed)
+        if data["pagespeed_options"] != "":
+            pagespeed = {}
+            pagespeed["pagespeed"] = "on" if s["pagespeed_enabled"] == 1 else "off"
+            pagespeed["EnableFilters"] = json.loads(s["pagespeed_options"])
+            pagespeed_json = json.dumps(pagespeed)
         redirect = base64.b64encode(base64.b64encode(data["redirect"]))
         if not self.result['errors']:
             if self.check_idn_name(zone):
