@@ -4,6 +4,8 @@ from django.db import connections
 from sslmanager import SslManager, check_zone
 from django.contrib.auth import authenticate, login
 import time
+import json
+import base64
 
 
 class Logger():
@@ -186,8 +188,8 @@ class InstallForm(SslManager, forms.Form, Logger):
         sslip = self.cleaned_data['sslip']
         password = self.cleaned_data['password']
         service_type = self.cleaned_data['service_type']
-        ssql = '''SELECT s.customer_id, s.directory, s.php_version, s.pagespeed_enabled, v.fqdn,
-                            v.server, i.ip, cst.dealer, bs.ip as serverip, ss.provider, ss.crt, ss.key
+        ssql = '''SELECT s.customer_id, s.directory, s.php_version, s.pagespeed_enabled, s.pagespeed_options, s.redirect,
+                            v.fqdn, v.server, v.ddos, v.blocked, i.ip, cst.dealer, bs.ip as serverip, bs.ipv6, ss.provider, ss.crt, ss.key
                             FROM billing.sites s, billing.vhosts v
                             LEFT JOIN billing.servers bs ON bs.name = v.server
                             LEFT JOIN billing.ip_addr i ON i.id=v.ip_id
@@ -198,7 +200,7 @@ class InstallForm(SslManager, forms.Form, Logger):
         if data:
             for k in 'crt', 'key':
                 try:
-                    ## get crt and key, if it posted cut not ascii symbols else get it from database
+                    ## get crt and key, if posted cut not ascii symbols, else get it from database
                     data[k] = ''.join(i for i in self.cleaned_data[k] if ord(i)<128) if len(self.cleaned_data[k])>0 else self.crypter.decrypt(bytes(data[k]))
                 except Exception as e:
                     print(str(e))
@@ -219,20 +221,34 @@ class InstallForm(SslManager, forms.Form, Logger):
         else:
             self.result['errors'].append('Домен не привязан к сайту')
             self.logger(self.user.username, 'Thereis no data for %s' % zone)
+        pagespeed_json = ""
+            if data["pagespeed_options"] != "":
+                pagespeed = {}
+                pagespeed["pagespeed"] = "on" if s["pagespeed_enabled"] == 1 else "off"
+                pagespeed["EnableFilters"] = json.loads(s["pagespeed_options"])
+                pagespeed_json = json.dumps(pagespeed)
+        redirect = base64.b64encode(base64.b64encode(data["redirect"]))
         if not self.result['errors']:
             if self.check_idn_name(zone):
                 if self.check_associate_cert_with_private_key(data['crt'], data['key']):
                     self.logger(self.user.username, 'domain: %s , newip: %s , service_type: %s, start install ssl' % (zone, sslip, service_type))
                     if sslip == 'newip':
+                        server_ip = data['ip']
                         target = self.db.load_object('SELECT purpose FROM billing.servers WHERE name="{0}"'.format(data['server']))['purpose']
                         target = target if target != 'hosting' else 'hosting-personal'
                         data['ip'] = self.get_free_ip(target)
+
                         if data['ip']:
                             self.logger(self.user.username, 'New ip is: %s' % data['ip'])
                             self.soap_add_ip(data['ip'], data['server'], data['customer_id'])
                             self.update_a_dns(zone, data['ip'])
                             self.update_ip_id(zone, data['ip'])
                             self.result['responseText'] = data['ip']
+                            sql = 'SELECT v.blocked, v.ddos, s.'
+                            self.soap_create_nginx_zone(
+                                data['server'], zone, data['directory'], server_ip, data['ip'], "",
+                                data['ipv6'], data['ddos'], data['blocked'], data['php_version'], redirect, pagespeed_json
+                            )
                         else:
                             self.result['errors'].append('Не удалось выделить новый ip адрес')
                             self.logger(self.user.username, 'No new ip, domain: %s' % zone)

@@ -168,8 +168,10 @@ class SslManager():
         s = soap.SOAPClient(server, 'Ip')
         s.AddIp(ip, user)
 
-    def soap_create_nginx_zone(self, **kwargs):
+    def soap_create_nginx_zone(self, server, zone, root_path, server_ip, ip, ipv6, ddos, blocked, php, redirect, pagespeed_json):
         s =  soap.SOAPClient(server, 'Ip')
+        #('shadow.webtm.ru', '/home/a/antfray/mediawiki_52/public_html', '92.53.96.47', '92.53.96.47', '', '2a03:6f00:1::5c35:602f', 'Y', 'N', '7.0', '', '')
+        s.InstallNginx(zone, root_path, server_ip, ip, "", ipv6, ddos, blocked, php, redirect, pagespeed_json)
 
     def soap_delete_zone(self, server, zone):
         s = soap.SOAPClient(server, 'SSL')
@@ -224,103 +226,8 @@ class SslManager():
         }
         if 'country' in csr:
             for key in short2long.keys():
-                if short2long[key]==csr['country']:
-                    csr['country'] = key
-        return csr
-
-    def parsecsr(self, csrtext):
-        csr = {}
-        csrtext = csrtext.split('\n')
-        #d.delousov legacy
-        for word in csrtext:
-            if word.startswith("domains"):
-                csr['commonname'] = re.sub('^domains','', word).strip().lower()
-            elif word.startswith("Domains"):
-                csr['commonname'] = re.sub('^Domains','', word).strip().lower()
-            elif word.startswith("Domain"):
-                csr['commonname'] = re.sub('^Domain','', word).strip().lower()
-            elif word.startswith("domain"):
-                csr['commonname'] = re.sub('^domain','', word).strip().lower()
-
-            if word.startswith("Name"):
-                csr['organizationalunit'] = re.sub('^Name','', word).lstrip()
-                if csr['organizationalunit']=="n\\a":
-                    csr['organizationalunit']="n\\\\a"
-                elif csr['organizationalunit']=="n/a":
-                    csr['organizationalunit']="n\/a"
-                elif csr['organizationalunit']=="N/A":
-                    csr['organizationalunit']="N\/A"
-
-            if word.startswith("Username"):
-                csr['emailAddress'] = word.replace("Username (Email Address)", "").strip().lower()
-
-            if word.startswith("Company"):
-                csr['organization'] = re.sub('^Company','', word).strip()
-                if csr['organization']=="n\\a":
-                    csr['organization']="n\\\\a"
-                elif csr['organization']=="n/a":
-                    csr['organization']="n\/a"
-                elif csr['organization']=="N/A":
-                    csr['organization']="N\/A"
-                elif csr['organization']=="N\\A":
-                    csr['organization']="N\\\\A"
-
-            if word.startswith("State"):
-                csr['state'] = word.replace("State/Region/Province", "").lstrip()
-                if csr['state']=="n\\a":
-                    csr['state']="n\\\\a"
-                elif csr['state']=="n/a":
-                    csr['state']="n\/a"
-                elif csr['state']=="N/A":
-                    csr['state']="N\/A"
-                elif csr['state']=="N\\A":
-                    csr['state']="N\\\\A"
-
-            if word.startswith("City"):
-                csr['locality'] = re.sub('^City','', word).lstrip()
-                if csr['locality']=="n\\a":
-                    csr['locality']="n\\\\a"
-                elif csr['locality']=="n/a":
-                    csr['locality']="n\/a"
-                elif csr['locality']=="N/A":
-                    csr['locality']="N\/A"
-                elif csr['locality']=="N\\A":
-                    csr['locality']="N\\\\A"
-
-            if word.startswith("Country"):
-                csr['country'] = re.sub('^Country','', word).lstrip().rstrip()
-        short2long = {"RU":"Russia",
-            "UA":"Ukraine",
-            "AE":"United Arab Emirates",
-            "GB":"United Kingdom",
-            "US":"United States",
-            "AR":"Argentina",
-            "AZ":"Azerbaijan",
-            "AM":"Armenia",
-            "BY":"Belarus",
-            "BR":"Brazil",
-            "BG":"Bulgaria",
-            "CA":"Canada",
-            "CY":"Cyprus",
-            "CZ":"Czech Republic",
-            "DK":"Denmark",
-            "FI":"Finland",
-            "FR":"France",
-            "GR":"Greece",
-            "GE":"Georgia",
-            "DE":"Germany",
-            "IL":"Israel",
-            "IT":"Italy",
-            "PK":"Pakistan",
-            "UZ":"Uzbekistan",
-            "BE":"Belgium",
-            "AT":"Austria",
-            "LV":"Latvia",
-        }
-        if 'country' in csr:
-            for key in short2long.keys():
-                if short2long[key]==csr['country']:
-                    csr['country'] = key
+                if short2long[key] == csr['country']:
+                    csr['country']=key
         return csr
 
     def generatecsr(self, **kwargs):
