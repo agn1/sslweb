@@ -169,7 +169,7 @@ class SslManager():
         s.AddIp(ip, user)
 
     def soap_create_nginx_zone(self, server, zone, root_path, server_ip, ip, ipv6, ddos, blocked, php, redirect, pagespeed_json):
-        s =  soap.SOAPClient(server, 'Ip')
+        s =  soap.SOAPClient(server, 'Apache')
         #('shadow.webtm.ru', '/home/a/antfray/mediawiki_52/public_html', '92.53.96.47', '92.53.96.47', '', '2a03:6f00:1::5c35:602f', 'Y', 'N', '7.0', '', '')
         s.InstallNginx(zone, root_path, server_ip, ip, "", ipv6, ddos, blocked, php, redirect, pagespeed_json)
 
