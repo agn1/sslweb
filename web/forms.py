@@ -224,8 +224,8 @@ class InstallForm(SslManager, forms.Form, Logger):
         pagespeed_json = ""
         if data["pagespeed_options"] != "":
             pagespeed = {}
-            pagespeed["pagespeed"] = "on" if s["pagespeed_enabled"] == 1 else "off"
-            pagespeed["EnableFilters"] = json.loads(s["pagespeed_options"])
+            pagespeed["pagespeed"] = "on" if data["pagespeed_enabled"] == 1 else "off"
+            pagespeed["EnableFilters"] = json.loads(data["pagespeed_options"])
             pagespeed_json = json.dumps(pagespeed)
         redirect = base64.b64encode(base64.b64encode(data["redirect"]))
         if not self.result['errors']:
