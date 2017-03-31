@@ -160,7 +160,7 @@ class SslManager():
                         crt += ''.join(f.readlines())
         return crt
 
-    def soap_install_sll(self, server, zone, root_path, nginx_ip, crt, key, php_version, blocked, pagespeed, nginx_ipv6):
+    def soap_install_sll(self, server, zone, root_path, nginx_ip, crt, key, php_version, blocked, pagespeed_json, nginx_ipv6):
         s = soap.SOAPClient(server, 'SSL')
         s.InstallSSL(zone, root_path, nginx_ip, crt, key, php_version, blocked, pagespeed_json, nginx_ipv6)
 
