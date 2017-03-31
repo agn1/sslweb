@@ -255,7 +255,7 @@ class InstallForm(SslManager, forms.Form, Logger):
                         if data['crt'].count('BEGIN CERTIFICATE') == 1:
                             data['crt'] = self.add_root_certs(data['crt'])
                         self.logger(self.user.username, 'domain : %s , ip : %s , server : %s , send soap install ssl' % (zone, data['ip'], data['server']))
-                        self.soap_install_sll(data['server'], zone, data['directory'], data['ip'], data['crt'], data['key'], data['php_version'])
+                        self.soap_install_sll(data['server'], zone, data['directory'], data['ip'], data['crt'], data['key'], data['php_version'], data['blocked'], pagespeed_json, data['ipv6'])
                 else:
                     self.result['errors'].append('Ошибка соответствия сертификата и ключа')
                     self.logger(self.user.username, 'Check associate key and crt failed. %s' % zone)
