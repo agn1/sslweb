@@ -217,17 +217,16 @@ class InstallForm(SslManager, forms.Form, Logger):
                 elif not data['ip'] and sslip == 'currentip':
                     self.result['errors'].append('Домен не привязан к выделенному адресу в дополнительных услугах')
                     self.logger(self.user.username, 'No additional ip %s' % zone)
-
+            pagespeed_json = ""
+            if data["pagespeed_options"] != "":
+                pagespeed = {}
+                pagespeed["pagespeed"] = "on" if data["pagespeed_enabled"] == 1 else "off"
+                pagespeed["EnableFilters"] = json.loads(data["pagespeed_options"])
+                pagespeed_json = json.dumps(pagespeed)
+            redirect = base64.b64encode(base64.b64encode(data["redirect"]))            
         else:
             self.result['errors'].append('Домен не привязан к сайту')
             self.logger(self.user.username, 'Thereis no data for %s' % zone)
-        pagespeed_json = ""
-        if data["pagespeed_options"] != "":
-            pagespeed = {}
-            pagespeed["pagespeed"] = "on" if data["pagespeed_enabled"] == 1 else "off"
-            pagespeed["EnableFilters"] = json.loads(data["pagespeed_options"])
-            pagespeed_json = json.dumps(pagespeed)
-        redirect = base64.b64encode(base64.b64encode(data["redirect"]))
         if not self.result['errors']:
             if self.check_idn_name(zone):
                 if self.check_associate_cert_with_private_key(data['crt'], data['key']):
