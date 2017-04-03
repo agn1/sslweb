@@ -206,11 +206,16 @@ class InstallForm(SslManager, forms.Form, Logger):
                     print(str(e))
                     self.result['errors'].append('Отсутствует %s для установки' % k)
                     self.logger(self.user.username, 'There is no %s for %s' % (k, zone))
-            if 'ENCRYPTED' in data['key'] and password:
-                data['key'] = self.delete_passphrase_from_key(data['key'], password)
-                if data['key'] is None:
-                    self.result['errors'].append('Не удалось удалить пароль из ключа')
-                    self.logger(self.user.username, 'delete passphrase from key failed')
+            if 'key' in data:
+                if 'ENCRYPTED' in data['key'] and password:
+                    data['key'] = self.delete_passphrase_from_key(data['key'], password)
+                    if data['key'] is None:
+                        self.result['errors'].append('Не удалось удалить пароль из ключа')
+                        self.logger(self.user.username, 'delete passphrase from key failed')
+            else:
+                self.result['errors'].append('Отсутствует ключ сертификата')
+                self.logger(self.user.username, 'There is no key for crt')
+
             if 'ip' in data and sslip != 'newip':
                 if sslip == 'serverip':
                     data['ip'] = self.db.load_object('SELECT ip FROM billing.servers WHERE name="%s"' % data['server'])['ip']
@@ -223,7 +228,7 @@ class InstallForm(SslManager, forms.Form, Logger):
                 pagespeed["pagespeed"] = "on" if data["pagespeed_enabled"] == 1 else "off"
                 pagespeed["EnableFilters"] = json.loads(data["pagespeed_options"])
                 pagespeed_json = json.dumps(pagespeed)
-            redirect = base64.b64encode(base64.b64encode(data["redirect"]))            
+            redirect = base64.b64encode(base64.b64encode(data["redirect"]))
         else:
             self.result['errors'].append('Домен не привязан к сайту')
             self.logger(self.user.username, 'Thereis no data for %s' % zone)
