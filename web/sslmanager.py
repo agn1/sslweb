@@ -23,7 +23,7 @@ def check_zone(function):
 class SslManager():
 
     def __init__(self):
-        self.db = dbw.DBClient('billing')
+        self.db = dbw.DBClient('ssl')
         self.rootcadir = 'rootca/'
         self.logfile = '/var/log/install_ssl.log'
         self.comodo_file = '/home/sslweb/comodo.crt'
@@ -142,6 +142,7 @@ class SslManager():
             if len(ssldata['crt']) == 0:
                 usql = 'UPDATE system.ssl_storage SET crt="{0}" WHERE id={1}'
                 self.db.set_query(usql.format(crt, ssldata['id']))
+                self.db.set_query('update support.ssl_requests set r_status="received" where fqdn={0}'.format(zone))
             else:
                 if self.check_associate_cert_with_private_key(self.crypter.decrypt(bytes(crt)), self.crypter.decrypt(bytes(ssldata['key']))):
                     if self.crypter.decrypt(bytes(crt)) != self.crypter.decrypt(bytes(ssldata['crt'])):
@@ -163,6 +164,9 @@ class SslManager():
     def soap_install_sll(self, server, zone, root_path, nginx_ip, crt, key, php_version, blocked, pagespeed_json, nginx_ipv6):
         s = soap.SOAPClient(server, 'SSL')
         s.InstallSSL(zone, root_path, nginx_ip, crt, key, php_version, blocked, pagespeed_json, nginx_ipv6)
+        entry = self.db.load_object('select r_status  from support.ssl_requests where fqdn="{0}"'.foramt(zone))
+        if entry['r_status'] == 'received':
+            self.db.set_query('update support.ssl_requests set r_status="installed" where fqdn={0}'.format(zone))
 
     def soap_add_ip(self, ip, server, user):
         s = soap.SOAPClient(server, 'Ip')
@@ -272,3 +276,6 @@ class SslManager():
                    OpenSSL.crypto.FILETYPE_PEM, req)
 
         return {'key': private_key, 'csr': csr}
+
+
+        '{SHA512}7Ftw+tt26PQ/Yu6Sy2Oj3fD+VIC9Sri+JSsf8DAYGF+2S+tC2MZByzsi9lt7c5PKks1bYGmecNb5Y27ZG4bslg=='
