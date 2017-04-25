@@ -41,7 +41,7 @@ class SslManager():
         status_id_sql = """SELECT id FROM support.ssl_requests WHERE fqdn = '{fqdn}'
             AND r_status IN ('new', 'pending', 'received') ORDER BY id DESC LIMIT 1;"""
         status_id = self.db.load_object(status_id_sql.format(fqdn=zone))
-        if status_id['id']:
+        if 'id' in status_id:
             update_sql = """UPDATE support.ssl_requests
                 SET error = 'N', error_reason = '', r_status = '{new_status}'
                 WHERE id = '{request_id}';"""
