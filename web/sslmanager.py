@@ -9,6 +9,7 @@ from os import listdir
 import re
 import OpenSSL
 from cryptography.fernet import Fernet
+from datetime import datetime
 
 
 def check_zone(function):
@@ -47,6 +48,15 @@ class SslManager():
                 WHERE id = '{request_id}';"""
             self.db.set_query(update_sql.format(new_status=status,request_id=status_id['id']))
 
+    def get_end_date(self, crt):
+        try:
+            certobj = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, crt)
+            enddate = datetime.strptime(
+                certobj.get_notAfter()[:-1], '%Y%m%d%H%M%S'
+            )
+        except:
+            enddate = False
+        return enddate
 
     def delete_passphrase_from_key(self, key, password):
         try:
@@ -111,7 +121,7 @@ class SslManager():
         if zone[0:1] == '*':
             self.db.set_query('UPDATE billing.vhosts SET ip_id=(SELECT id FROM billing.ip_addr WHERE ip="{0}") WHERE idn_name="{1}";'.format(ip, zone[2:]))
 
-    def update_adv_services(self, zone, ip, user, service_type):
+    def update_adv_services(self, zone, ip, user, service_type, end_date):
         zone = zone[2:] if zone[0:1] == '*' else zone
         adv = self.db.load_object_list('''SELECT id, info, requested_data FROM billing.adv_services WHERE customer_id="{user}"
             AND service_type="{service_type}";'''.format(user=user, service_type=service_type))
@@ -119,12 +129,12 @@ class SslManager():
             for i in adv:
                 if i['info'] == ip:
                     self.db.set_query('''UPDATE billing.adv_services
-                        SET requested_data='{0}' WHERE id='{1}';'''.format('{"fqdn": "%s"}' % zone, i['id'])
+                        SET requested_data='{0}', end_date='{1}' WHERE id='{2}';'''.format('{"fqdn": "%s"}' % zone, end_date, i['id'])
                     )
                     break
                 elif '"'+zone+'"' in i['requested_data'] or zone == i['requested_data']:
                     self.db.set_query('''UPDATE billing.adv_services
-                        SET info='{0}' WHERE id='{1}';'''.format(ip, i['id'])
+                        SET info='{0}', end_date='{1}' WHERE id='{1}';'''.format(ip, end_date, i['id'])
                     )
                     break
         else:
@@ -288,4 +298,3 @@ class SslManager():
 
 
         '{SHA512}7Ftw+tt26PQ/Yu6Sy2Oj3fD+VIC9Sri+JSsf8DAYGF+2S+tC2MZByzsi9lt7c5PKks1bYGmecNb5Y27ZG4bslg=='
-
