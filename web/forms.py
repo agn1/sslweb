@@ -254,6 +254,7 @@ class InstallForm(SslManager, forms.Form, Logger):
                             self.result['errors'].append('Не удалось выделить новый ip адрес')
                             self.logger(self.user.username, 'No new ip, domain: %s' % zone)
                     if not self.result['errors']:
+                        self.logger(self.user.username, 'update adv_services st={0}, end_date={1}'.format(service_type, get_end_date(data['crt'])))
                         self.update_adv_services(zone, data['ip'], data['customer_id'], service_type, self.get_end_date(data['crt']))
                         self.update_ssl_storage(zone, self.crypter.encrypt(bytes(data['key'])), self.crypter.encrypt(bytes(data['crt'])))
                         if data['crt'].count('BEGIN CERTIFICATE') == 1:
