@@ -90,7 +90,7 @@ class SslManager():
 
     def get_free_ip(self, target):
         result = None
-        data = {"target": target, "location":"4", "ipv4":"true"}
+        data = {"target": target, "location": "4", "ipv4": "true"}
         kwargs = {'data': json.dumps(data),
                   'headers': {'content-type': 'application/json'},
                   'auth': (self.ipapiuser, self.ipapipass)}
@@ -125,6 +125,8 @@ class SslManager():
         zone = zone[2:] if zone[0:1] == '*' else zone
         adv = self.db.load_object_list('''SELECT id, info, requested_data FROM billing.adv_services WHERE customer_id="{user}"
             AND service_type="{service_type}";'''.format(user=user, service_type=service_type))
+        if service_type == 3:
+            end_date = '0000-00-00'
         if adv:
             for i in adv:
                 if i['info'] == ip:
@@ -134,14 +136,14 @@ class SslManager():
                     break
                 elif '"'+zone+'"' in i['requested_data'] or zone == i['requested_data']:
                     self.db.set_query('''UPDATE billing.adv_services
-                        SET info='{0}', end_date='{1}' WHERE id='{1}';'''.format(ip, end_date, i['id'])
+                        SET info='{0}', end_date='{1}' WHERE id='{2}';'''.format(ip, end_date, i['id'])
                     )
                     break
         else:
             self.db.set_query('''INSERT INTO billing.adv_services
                 (service_type, customer_id, add_date, end_date, info, service_comment, service_status, requested_data, vds_id, pay_for)
-                VALUES ('{0}', '{1}', CURRENT_TIMESTAMP, NOW() + INTERVAL 1 YEAR, '{2}', '','new', '{3}','0','y');'''.format(
-                    service_type, user, ip, '{"fqdn": "%s"}' % zone
+                VALUES ('{0}', '{1}', CURRENT_TIMESTAMP, '{2}', '{3}', '','new', '{4}','0','y');'''.format(
+                    service_type, user, end_date, ip, '{"fqdn": "%s"}' % zone
                 )
             )
         adv = self.db.load_object('''SELECT count(id) as count FROM billing.adv_services WHERE customer_id="{user}"
@@ -149,8 +151,8 @@ class SslManager():
         if adv['count'] == 0 :
             self.db.set_query('''INSERT INTO billing.adv_services
                 (service_type, customer_id, add_date, end_date, info, service_comment, service_status, requested_data, vds_id, pay_for)
-                VALUES ('{0}', '{1}', CURRENT_TIMESTAMP, NOW() + INTERVAL 1 YEAR, '{2}', '','new', '{3}','0','y');'''.format(
-                    service_type, user, ip, '{"fqdn": "%s"}' % zone
+                VALUES ('{0}', '{1}', CURRENT_TIMESTAMP, '{2}', '{3}', '','new', '{4}','0','y');'''.format(
+                    service_type, user, end_date, ip, '{"fqdn": "%s"}' % zone
                 )
             )
 
