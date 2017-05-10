@@ -247,6 +247,7 @@ class SslManager():
             "BE":"Belgium",
             "AT":"Austria",
             "LV":"Latvia",
+            "KZ": "Kazakhstan",
         }
         if 'country' in csr:
             for key in short2long.keys():
